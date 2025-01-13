@@ -1,9 +1,11 @@
 {
   "private": true,
   "workspaces": [
-    "infrastructure"
+    "infrastructure",
+    "services/account-balance-importdata-oncreate"
   ],
   "scripts": {
+    "build": "yarn --cwd ./services/account-balance-importdata-oncreate run build",
     "deploy": "yarn --cwd ./infrastructure run deploy",
     "hotdeploy": "yarn --cwd ./infrastructure run hotdeploy"
   }

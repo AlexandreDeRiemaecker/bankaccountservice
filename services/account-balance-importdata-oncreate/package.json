@@ -1,0 +1,14 @@
+{
+  "name": "account-balance-importdata-oncreate",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w"
+  },
+  "dependencies": {
+    "@aws-sdk/client-neptunedata": "^3.x",
+    "@types/aws-lambda": "^8.10.147",
+    "aws-sdk": "^2.1366.0"
+  }
+}
