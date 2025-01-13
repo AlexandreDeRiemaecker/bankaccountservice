@@ -8,6 +8,7 @@
   "scripts": {
     "build": "yarn --cwd ./services/bankaccount-service-importdata run build && yarn --cwd ./services/bankaccount-service-api run build",
     "deploy": "yarn --cwd ./infrastructure run deploy",
-    "hotdeploy": "yarn --cwd ./infrastructure run hotdeploy"
+    "hotdeploy": "yarn --cwd ./infrastructure run hotdeploy",
+    "test": "yarn --cwd ./services/bankaccount-service-api run test"
   }
 }

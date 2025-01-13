@@ -65,8 +65,8 @@ export class InfrastructureStack extends cdk.Stack {
         runtime: lambda.Runtime.NODEJS_22_X,
         handler: "main.handler",
         environment: {
-          NeptuneEndpointHostname: neptuneCluster.clusterEndpoint.hostname,
-          NeptuneEndpointPort: neptuneCluster.clusterEndpoint.port.toString(),
+          NEPTUNE_ENDPOINT_HOSTNAME: neptuneCluster.clusterEndpoint.hostname,
+          NEPTUNE_ENDPOINT_PORT: neptuneCluster.clusterEndpoint.port.toString(),
           AWSRegion: this.region,
         },
       }
