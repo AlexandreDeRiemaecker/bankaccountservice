@@ -2,10 +2,11 @@
   "private": true,
   "workspaces": [
     "infrastructure",
-    "services/account-balance-importdata-oncreate"
+    "services/bankaccount-service-importdata",
+    "services/bankaccount-service-api"
   ],
   "scripts": {
-    "build": "yarn --cwd ./services/account-balance-importdata-oncreate run build",
+    "build": "yarn --cwd ./services/bankaccount-service-importdata run build && yarn --cwd ./services/bankaccount-service-api run build",
     "deploy": "yarn --cwd ./infrastructure run deploy",
     "hotdeploy": "yarn --cwd ./infrastructure run hotdeploy"
   }
