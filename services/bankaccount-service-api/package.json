@@ -23,8 +23,10 @@
     "@codegenie/serverless-express": "^4.16.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
-    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/platform-express": "^10.4.15",
     "@nestjs/swagger": "^8.1.1",
+    "swagger-ui-dist": "^5.18.2",
+    "class-validator": "^0.14.1",
     "copy-webpack-plugin": "^12.0.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"

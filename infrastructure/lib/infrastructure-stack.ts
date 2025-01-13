@@ -60,6 +60,7 @@ export class InfrastructureStack extends cdk.Stack {
       "BankAccountService-NestJS-Lambda",
       {
         code: lambda.Code.fromAsset("../services/bankaccount-service-api/dist"),
+        description: "Handles BankAccountService API requests via a bundled NestJS Lambda",
         vpc: vpc,
         runtime: lambda.Runtime.NODEJS_22_X,
         handler: "main.handler",
