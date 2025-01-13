@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "workspaces": [
+    "infrastructure"
+  ],
+  "scripts": {
+    "deploy": "yarn --cwd ./infrastructure run deploy",
+    "hotdeploy": "yarn --cwd ./infrastructure run hotdeploy"
+  }
+}
