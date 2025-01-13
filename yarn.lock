@@ -25,6 +25,11 @@
   resolved "https://registry.yarnpkg.com/@aws-cdk/asset-node-proxy-agent-v6/-/asset-node-proxy-agent-v6-2.1.0.tgz#6d3c7860354d4856a7e75375f2f0ecab313b4989"
   integrity sha512-7bY3J8GCVxLupn/kNmpPc5VJz8grx+4RKfnnJiO1LG+uxkZfANZG3RMHhE+qQxxwkyQ9/MfPtTpf748UhR425A==
 
+"@aws-cdk/aws-neptune-alpha@^2.174.1-alpha.0":
+  version "2.174.1-alpha.0"
+  resolved "https://registry.yarnpkg.com/@aws-cdk/aws-neptune-alpha/-/aws-neptune-alpha-2.174.1-alpha.0.tgz#02d7f891d730d573e555f066eca3d6ff4888b0ac"
+  integrity sha512-nlYlrxjWZzEpRX3m9qo0asXqVvX7DX/1qnEr2kwqodJrmmSB1E8wk9q6VN4c5T+6cbXIDzxJm7Sug5v4r9K3XQ==
+
 "@aws-cdk/cloud-assembly-schema@^39.0.1":
   version "39.1.44"
   resolved "https://registry.yarnpkg.com/@aws-cdk/cloud-assembly-schema/-/cloud-assembly-schema-39.1.44.tgz#4ae982212d9d711b812858a1a3986c77d979f1c0"
