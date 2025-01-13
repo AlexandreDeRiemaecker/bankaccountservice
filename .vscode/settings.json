@@ -1,0 +1,17 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/*.meta": true,
+        "**/*.js.map": true,
+        "**/node_modules": true,
+        "**/cdk.out": true,
+        "**/*.d.ts": true,
+        "**/tsconfig.tsbuildinfo": true,
+        "**/*.js": {"when": "$(basename).ts"}
+    }
+}
