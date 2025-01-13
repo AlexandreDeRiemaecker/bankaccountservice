@@ -1,1 +1,4 @@
-export class CreateBankAccountDto {}
+export class CreateBankAccountDto {
+  IBAN: string;
+  currentBalance: number;
+}

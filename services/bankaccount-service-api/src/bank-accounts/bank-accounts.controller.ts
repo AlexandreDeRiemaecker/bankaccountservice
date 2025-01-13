@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
@@ -8,27 +18,65 @@ export class BankAccountsController {
   constructor(private readonly bankAccountsService: BankAccountsService) {}
 
   @Post()
-  create(@Body() createBankAccountDto: CreateBankAccountDto) {
-    return this.bankAccountsService.create(createBankAccountDto);
+  async create(@Body() createBankAccountDto: CreateBankAccountDto) {
+    try {
+      return await this.bankAccountsService.create(createBankAccountDto);
+    } catch (error) {
+      throw new HttpException(
+        { message: 'Failed to create bank account', error },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get()
-  findAll() {
-    return this.bankAccountsService.findAll();
+  async findAll() {
+    try {
+      return await this.bankAccountsService.findAll();
+    } catch (error) {
+      throw new HttpException(
+        { message: 'Failed to retrieve bank accounts', error },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bankAccountsService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    try {
+      return await this.bankAccountsService.findOne(id);
+    } catch (error) {
+      throw new HttpException(
+        { message: error.message || 'Failed to retrieve bank account', error },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBankAccountDto: UpdateBankAccountDto) {
-    return this.bankAccountsService.update(+id, updateBankAccountDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateBankAccountDto: UpdateBankAccountDto,
+  ) {
+    try {
+      return await this.bankAccountsService.update(id, updateBankAccountDto);
+    } catch (error) {
+      throw new HttpException(
+        { message: 'Failed to update bank account', error },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bankAccountsService.remove(+id);
+  async remove(@Param('id') id: string) {
+    try {
+      return await this.bankAccountsService.remove(id);
+    } catch (error) {
+      throw new HttpException(
+        { message: 'Failed to delete bank account', error },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

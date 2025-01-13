@@ -1,26 +1,64 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
+import { NeptuneService } from '../shared/neptune/neptune.service';
 
 @Injectable()
 export class BankAccountsService {
-  create(createBankAccountDto: CreateBankAccountDto) {
-    return 'This action adds a new bankAccount';
+  constructor(private readonly neptuneService: NeptuneService) {}
+
+  async create(createBankAccountDto: CreateBankAccountDto) {
+    const existingAccount = await this.neptuneService.findVertexByProperty(
+      'BankAccount',
+      'IBAN',
+      createBankAccountDto.IBAN,
+    );
+
+    if (existingAccount) {
+      throw new Error('BankAccount with this IBAN already exists');
+    }
+
+    const result = await this.neptuneService.addVertex('BankAccount', {
+      IBAN: createBankAccountDto.IBAN,
+      currentBalance: createBankAccountDto.currentBalance,
+    });
+    return result;
   }
 
-  findAll() {
-    return `This action returns all bankAccounts`;
+  async findAll() {
+    return await this.neptuneService.findVertices('BankAccount');
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} bankAccount`;
+  async findOne(id: string) {
+    const bankAccount = await this.neptuneService.findVertexByProperty(
+      'BankAccount',
+      'IBAN',
+      id,
+    );
+
+    if (!bankAccount) {
+      throw new Error('BankAccount not found');
+    }
+
+    return bankAccount;
   }
 
-  update(id: number, updateBankAccountDto: UpdateBankAccountDto) {
-    return `This action updates a #${id} bankAccount`;
+  async update(id: string, updateBankAccountDto: UpdateBankAccountDto) {
+    const updatedVertexId = await this.neptuneService.updateVertex(
+      'BankAccount',
+      'IBAN',
+      id,
+      updateBankAccountDto,
+    );
+    return { updatedVertexId };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} bankAccount`;
+  async remove(id: string): Promise<{ deletedVertexId: string }> {
+    const deletedVertexId = await this.neptuneService.deleteVertex(
+      'BankAccount',
+      'IBAN',
+      id,
+    );
+    return { deletedVertexId };
   }
 }
