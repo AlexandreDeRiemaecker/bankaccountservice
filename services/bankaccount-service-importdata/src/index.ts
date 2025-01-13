@@ -3,6 +3,7 @@ import {
   ExecuteGremlinQueryCommand,
 } from "@aws-sdk/client-neptunedata";
 import { CloudFormationCustomResourceEvent } from "aws-lambda";
+import { randomUUID } from 'crypto';
 
 export const handler = async (event: CloudFormationCustomResourceEvent) => {
   const requestType = event.RequestType;
@@ -45,7 +46,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       .mergeV([(T.id): 'person-1'])
         .option(onCreate, [
           (T.label): 'Person',
-          personId  : '1',
+          personId  : '${randomUUID()}',
           name      : 'Alice',
           email     : 'alice@example.com'
         ])
@@ -57,7 +58,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       .mergeV([(T.id): 'person-2'])
         .option(onCreate, [
           (T.label): 'Person',
-          personId  : '2',
+          personId  : '${randomUUID()}',
           name      : 'Bob',
           email     : 'bob@example.com'
         ])
@@ -69,7 +70,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       .mergeV([(T.id): 'person-3'])
         .option(onCreate, [
           (T.label): 'Person',
-          personId  : '3',
+          personId  : '${randomUUID()}',
           name      : 'Carol',
           email     : 'carol@example.com'
         ])
