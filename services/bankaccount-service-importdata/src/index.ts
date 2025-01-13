@@ -104,7 +104,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       .mergeV([(T.id): 'tx-1'])
         .option(onCreate, [
           (T.label)       : 'BankTransaction',
-          transactionId   : 'tx1',
+          transactionId   : '${randomUUID()}',
           otherPersonIBAN : 'DE999',
           amount          : -150
         ])
@@ -116,7 +116,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       .mergeV([(T.id): 'tx-2'])
         .option(onCreate, [
           (T.label)       : 'BankTransaction',
-          transactionId   : 'tx2',
+          transactionId   : '${randomUUID()}',
           otherPersonIBAN : 'DE456',
           amount          : 300
         ])
