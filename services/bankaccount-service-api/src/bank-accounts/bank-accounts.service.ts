@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
@@ -23,11 +23,31 @@ export class BankAccountsService {
       throw new Error('BankAccount with this IBAN already exists');
     }
 
-    const result = await this.neptuneService.addVertex('BankAccount', {
+    // Ensure the person exists
+    const person = await this.neptuneService.findVertexByProperty(
+      'Person',
+      'personId',
+      createBankAccountDto.personId,
+    );
+
+    if (!person) {
+      throw new NotFoundException('Person not found');
+    }
+
+    // Create the bank account vertex
+    const bankAccount = await this.neptuneService.addVertex('BankAccount', {
       IBAN: createBankAccountDto.IBAN,
       currentBalance: createBankAccountDto.currentBalance,
     });
-    return result;
+
+    // Link the bank account to the person
+    await this.neptuneService.addEdge(
+      'owns_account',
+      person.id,
+      bankAccount.id,
+    );
+
+    return bankAccount;
   }
 
   async findAll(): Promise<BankAccount[]> {
@@ -61,11 +81,11 @@ export class BankAccountsService {
     return { updatedVertexId };
   }
 
-  async remove(id: string): Promise<DeleteResponseDto> {
+  async remove(IBAN: string): Promise<DeleteResponseDto> {
     const deletedVertexId = await this.neptuneService.deleteVertex(
       'BankAccount',
       'IBAN',
-      id,
+      IBAN,
     );
     return { deletedVertexId };
   }

@@ -30,22 +30,53 @@ describe('BankTransactionsService', () => {
 
   it('should create a new bank transaction', async () => {
     const createBankTransactionDto: CreateBankTransactionDto = {
+      bankAccountIBAN: 'DE9876543210',
       otherPersonIBAN: 'DE1234567890',
       amount: 1000,
     };
 
+    const otherPerson = { id: 'otherPersonId', IBAN: 'DE1234567890' };
+    const bankAccount = { id: 'bankAccountId', IBAN: 'DE9876543210' };
+    const newTransaction = {
+      id: 'newTransactionId',
+      ...createBankTransactionDto,
+    };
+
     jest
-      .spyOn(neptuneService, 'addVertex')
-      .mockResolvedValue(createBankTransactionDto);
+      .spyOn(neptuneService, 'findVertexByProperty')
+      .mockResolvedValueOnce(otherPerson)
+      .mockResolvedValueOnce(bankAccount);
+
+    jest.spyOn(neptuneService, 'addVertex').mockResolvedValue(newTransaction);
+
+    // Add the missing addEdge mock here
+    jest.spyOn(neptuneService, 'addEdge').mockResolvedValue({
+      id: 'edgeId',
+      label: 'TRANSFER',
+    });
 
     const result = await service.create(createBankTransactionDto);
-    expect(result).toEqual(createBankTransactionDto);
+    expect(result).toEqual(newTransaction);
+  });
+
+  it('should throw an error if bank account is not found', async () => {
+    const createBankTransactionDto: CreateBankTransactionDto = {
+      bankAccountIBAN: 'DE9876543210',
+      otherPersonIBAN: 'DE1234567890',
+      amount: 1000,
+    };
+
+    jest.spyOn(neptuneService, 'findVertexByProperty').mockResolvedValue(null);
+
+    await expect(service.create(createBankTransactionDto)).rejects.toThrow(
+      'BankAccount not found',
+    );
   });
 
   it('should find all bank transactions', async () => {
     const bankTransactions = [
-      { otherPersonIBAN: 'DE1234567890', amount: 1000 },
-      { otherPersonIBAN: 'DE0987654321', amount: 2000 },
+      { id: '1', amount: 1000, otherPersonIBAN: 'DE1234567890' },
+      { id: '2', amount: 2000, otherPersonIBAN: 'DE0987654321' },
     ];
 
     jest
@@ -56,8 +87,12 @@ describe('BankTransactionsService', () => {
     expect(result).toEqual(bankTransactions);
   });
 
-  it('should find one bank transaction by transactionId', async () => {
-    const bankTransaction = { otherPersonIBAN: 'DE1234567890', amount: 1000 };
+  it('should find one bank transaction', async () => {
+    const bankTransaction = {
+      id: 'transactionId',
+      amount: 1000,
+      otherPersonIBAN: 'DE1234567890',
+    };
 
     jest
       .spyOn(neptuneService, 'findVertexByProperty')
@@ -75,6 +110,34 @@ describe('BankTransactionsService', () => {
     );
   });
 
+  it('should throw an error if other person bank account is not found', async () => {
+    const createBankTransactionDto: CreateBankTransactionDto = {
+      bankAccountIBAN: 'DE9876543210',
+      otherPersonIBAN: 'DE1234567890',
+      amount: 1000,
+    };
+
+    jest
+      .spyOn(neptuneService, 'findVertexByProperty')
+      .mockResolvedValueOnce(null);
+
+    await expect(service.create(createBankTransactionDto)).rejects.toThrow(
+      'Other person BankAccount not found',
+    );
+  });
+
+  it('should throw an error if transaction amount is not positive', async () => {
+    const createBankTransactionDto: CreateBankTransactionDto = {
+      bankAccountIBAN: 'DE9876543210',
+      otherPersonIBAN: 'DE1234567890',
+      amount: -1000,
+    };
+
+    await expect(service.create(createBankTransactionDto)).rejects.toThrow(
+      'Transaction amount must be positive',
+    );
+  });
+
   it('should update a bank transaction', async () => {
     const updateBankTransactionDto: UpdateBankTransactionDto = {
       amount: 2000,
@@ -89,6 +152,14 @@ describe('BankTransactionsService', () => {
       updateBankTransactionDto,
     );
     expect(result).toEqual({ updatedVertexId: 'updatedVertexId' });
+  });
+
+  it('should throw an error if update amount is not provided', async () => {
+    const updateBankTransactionDto: UpdateBankTransactionDto = {};
+
+    await expect(
+      service.update('transactionId', updateBankTransactionDto),
+    ).rejects.toThrow('Malformed request: amount is required');
   });
 
   it('should remove a bank transaction', async () => {

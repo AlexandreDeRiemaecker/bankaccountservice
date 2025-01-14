@@ -79,6 +79,33 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
+   * Add an edge between two vertices.
+   * @param label Edge label.
+   * @param fromVertexId ID of the starting vertex.
+   * @param toVertexId ID of the ending vertex.
+   * @returns The added edge.
+   */
+  async addEdge(
+    label: string,
+    fromVertexId: string,
+    toVertexId: string,
+  ): Promise<any> {
+    try {
+      const result = await this.g
+        .V(fromVertexId)
+        .addE(label)
+        .to(this.g.V(toVertexId))
+        .next();
+
+      console.log('Added edge:', JSON.stringify(result, null, 2));
+      return result.value;
+    } catch (error) {
+      console.error('Error adding edge:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Update a vertex by its label, property, and value.
    * @param label The label of the vertex to update.
    * @param idProperty The property to filter by.
@@ -141,6 +168,10 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
         .valueMap(true) // Retrieve properties including meta-properties like vertex IDs.
         .toList();
 
+      if (!traversers) {
+        return [];
+      }
+
       // Convert Map to plain object, flatten single-value arrays, and exclude `id` and `label`.
       const result = traversers.map((map: Map<string, any>) => {
         const obj = Object.fromEntries(map);
@@ -161,7 +192,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
       return result;
     } catch (error) {
       console.error('Error finding vertices:', error);
-      throw error;
+      return [];
     }
   }
 

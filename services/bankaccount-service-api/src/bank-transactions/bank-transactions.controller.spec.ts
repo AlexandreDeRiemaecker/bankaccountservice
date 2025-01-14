@@ -55,6 +55,7 @@ describe('BankTransactionsController', () => {
   describe('create', () => {
     it('should create a bank transaction', async () => {
       const createBankTransactionDto: CreateBankTransactionDto = {
+        bankAccountIBAN: 'DE9876543210',
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
       };
@@ -69,6 +70,7 @@ describe('BankTransactionsController', () => {
 
     it('should throw an error if creation fails', async () => {
       const createBankTransactionDto: CreateBankTransactionDto = {
+        bankAccountIBAN: 'DE9876543210',
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
       };

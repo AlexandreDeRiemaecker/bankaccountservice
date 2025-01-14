@@ -1,4 +1,4 @@
-import { IsNumber, IsIBAN } from 'class-validator';
+import { IsNumber, IsIBAN, IsUUID } from 'class-validator';
 
 export class CreateBankAccountDto {
   @IsIBAN()
@@ -6,4 +6,7 @@ export class CreateBankAccountDto {
 
   @IsNumber()
   currentBalance: number;
+
+  @IsUUID()
+  personId: string;
 }
