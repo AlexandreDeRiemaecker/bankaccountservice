@@ -1,3 +1,6 @@
+/**
+ * Represents a bank account with its IBAN and current balance.
+ */
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BankAccount {

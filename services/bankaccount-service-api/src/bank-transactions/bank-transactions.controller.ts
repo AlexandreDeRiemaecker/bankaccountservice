@@ -9,6 +9,7 @@ import {
   HttpException,
   HttpStatus,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { BankTransactionsService } from './bank-transactions.service';
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
@@ -91,7 +92,11 @@ export class BankTransactionsController {
   })
   async findOne(@Param('id') id: string): Promise<BankTransaction> {
     try {
-      return await this.bankTransactionsService.findOne(id);
+      const transaction = await this.bankTransactionsService.findOne(id);
+      if (!transaction) {
+        throw new NotFoundException(`Bank transaction with id ${id} not found`);
+      }
+      return transaction;
     } catch (error) {
       this.logger.error('Failed to retrieve bank transaction', error.stack);
       throw new HttpException(
@@ -122,10 +127,14 @@ export class BankTransactionsController {
     @Body() updateBankTransactionDto: UpdateBankTransactionDto,
   ): Promise<UpdateResponseDto> {
     try {
-      return await this.bankTransactionsService.update(
+      const updatedTransaction = await this.bankTransactionsService.update(
         id,
         updateBankTransactionDto,
       );
+      if (!updatedTransaction) {
+        throw new NotFoundException(`Bank transaction with id ${id} not found`);
+      }
+      return updatedTransaction;
     } catch (error) {
       this.logger.error('Failed to update bank transaction', error.stack);
       throw new HttpException(
@@ -149,7 +158,11 @@ export class BankTransactionsController {
   })
   async remove(@Param('id') id: string): Promise<DeleteResponseDto> {
     try {
-      return await this.bankTransactionsService.remove(id);
+      const deletedTransaction = await this.bankTransactionsService.remove(id);
+      if (!deletedTransaction) {
+        throw new NotFoundException(`Bank transaction with id ${id} not found`);
+      }
+      return deletedTransaction;
     } catch (error) {
       this.logger.error('Failed to delete bank transaction', error.stack);
       throw new HttpException(

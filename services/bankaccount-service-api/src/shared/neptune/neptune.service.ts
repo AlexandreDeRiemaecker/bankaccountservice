@@ -33,16 +33,27 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
       .withRemote(new driver.DriverRemoteConnection(this.endpoint));
   }
 
+  /**
+   * Get the Gremlin traversal source.
+   * @returns The Gremlin traversal source.
+   */
   getTraversal() {
     return this.g;
   }
 
+  /**
+   * Lifecycle hook that is called when the module is initialized.
+   */
   onModuleInit() {
     console.log(
       `NeptuneService initialized with Gremlin endpoint: ${this.endpoint}`,
     );
   }
 
+  /**
+   * Lifecycle hook that is called when the module is destroyed.
+   * Closes the Gremlin client.
+   */
   async onModuleDestroy() {
     console.log('NeptuneService is being destroyed. Closing Gremlin client.');
     try {
@@ -196,6 +207,13 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Find a vertex by its label, property, and value.
+   * @param label The label of the vertex to find.
+   * @param idProperty The property to filter by.
+   * @param idValue The value of the property to filter by.
+   * @returns The found vertex.
+   */
   async findVertexByProperty(
     label: string,
     idProperty: string,
@@ -234,6 +252,13 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  /**
+   * Delete a vertex by its label, property, and value.
+   * @param label The label of the vertex to delete.
+   * @param idProperty The property to filter by.
+   * @param idValue The value of the property to filter by.
+   * @returns The ID of the deleted vertex.
+   */
   async deleteVertex(
     label: string,
     idProperty: string,

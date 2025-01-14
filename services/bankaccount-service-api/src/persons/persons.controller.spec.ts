@@ -5,9 +5,9 @@ import { SharedModule } from '../shared/shared.module';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
-import { Person } from './dto/person.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { DeleteResponseDto } from './dto/delete-response.dto';
+import { PersonDto } from './dto/person.dto';
 
 describe('PersonsController', () => {
   let controller: PersonsController;
@@ -56,7 +56,7 @@ describe('PersonsController', () => {
   describe('create', () => {
     it('should create a person', async () => {
       const dto: CreatePersonDto = { name: 'John', email: 'john@example.com' };
-      const result: Person = {
+      const result: PersonDto = {
         id: 'UUID',
         personId: 'UUID',
         name: 'John',
@@ -81,7 +81,7 @@ describe('PersonsController', () => {
 
   describe('findAll', () => {
     it('should return an array of persons', async () => {
-      const result: Person[] = [
+      const result: PersonDto[] = [
         {
           id: 'UUID1',
           personId: 'UUID1',
@@ -107,7 +107,7 @@ describe('PersonsController', () => {
 
   describe('findOne', () => {
     it('should return a single person', async () => {
-      const result: Person = {
+      const result: PersonDto = {
         id: 'UUID2',
         personId: 'UUID2',
         name: 'Jane',

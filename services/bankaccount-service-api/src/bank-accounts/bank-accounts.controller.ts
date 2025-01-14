@@ -1,23 +1,24 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
+  Get,
   HttpException,
   HttpStatus,
   Logger,
+  Param,
+  Patch,
+  Delete,
 } from '@nestjs/common';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
-import { ApiResponse } from '@nestjs/swagger';
 import { BankAccount } from './dto/bank-account.dto';
 import { UpdateResponseDto } from '../bank-accounts/dto/update-response.dto';
 import { DeleteResponseDto } from '../bank-accounts/dto/delete-response.dto';
 
+@ApiTags('bank-accounts')
 @Controller('bank-accounts')
 export class BankAccountsController {
   private readonly logger = new Logger(BankAccountsController.name);
@@ -33,6 +34,11 @@ export class BankAccountsController {
     description: 'The bank account has been successfully created.',
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
+  @ApiResponse({ status: 404, description: 'Person not found.' })
+  @ApiResponse({
+    status: 409,
+    description: 'BankAccount with this IBAN already exists.',
+  })
   @ApiResponse({
     status: 500,
     description: 'Internal Server Error.',

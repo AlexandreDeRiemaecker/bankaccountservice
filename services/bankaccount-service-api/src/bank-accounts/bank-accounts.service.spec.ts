@@ -44,10 +44,17 @@ describe('BankAccountsService', () => {
       .mockResolvedValueOnce(null) // for checking existing account
       .mockResolvedValueOnce({ id: '1' }); // for checking person existence
     jest.spyOn(neptuneService, 'addVertex').mockResolvedValue(bankAccount);
-    jest.spyOn(neptuneService, 'addEdge').mockResolvedValue({});
+    const addEdgeSpy = jest
+      .spyOn(neptuneService, 'addEdge')
+      .mockResolvedValue({});
 
     const result = await service.create(createBankAccountDto);
     expect(result).toEqual(bankAccount);
+    expect(addEdgeSpy).toHaveBeenCalledWith(
+      'owns_account',
+      expect.anything(),
+      expect.anything(),
+    );
   });
 
   it('should throw an error if bank account already exists', async () => {
@@ -57,9 +64,15 @@ describe('BankAccountsService', () => {
       currentBalance: 1000,
     };
 
+    const existingBankAccount = {
+      id: '2',
+      IBAN: createBankAccountDto.IBAN,
+      currentBalance: createBankAccountDto.currentBalance,
+    };
+
     jest
       .spyOn(neptuneService, 'findVertexByProperty')
-      .mockResolvedValue(createBankAccountDto);
+      .mockResolvedValue(existingBankAccount);
 
     await expect(service.create(createBankAccountDto)).rejects.toThrow(
       'BankAccount with this IBAN already exists',

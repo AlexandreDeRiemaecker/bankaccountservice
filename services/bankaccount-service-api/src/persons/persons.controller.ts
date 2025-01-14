@@ -16,6 +16,7 @@ import { UpdatePersonDto } from './dto/update-person.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { DeleteResponseDto } from './dto/delete-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
+import { PersonDto } from './dto/person.dto';
 
 @Controller('persons')
 export class PersonsController {
@@ -27,6 +28,7 @@ export class PersonsController {
   @ApiResponse({
     status: 201,
     description: 'The person has been successfully created.',
+    type: PersonDto,
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({
@@ -34,7 +36,7 @@ export class PersonsController {
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async create(@Body() createPersonDto: CreatePersonDto) {
+  async create(@Body() createPersonDto: CreatePersonDto): Promise<PersonDto> {
     try {
       return await this.personsService.create(createPersonDto);
     } catch (error) {
@@ -50,13 +52,14 @@ export class PersonsController {
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved persons.',
+    type: [PersonDto],
   })
   @ApiResponse({
     status: 500,
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async findAll() {
+  async findAll(): Promise<PersonDto[]> {
     try {
       return await this.personsService.findAll();
     } catch (error) {
@@ -72,6 +75,7 @@ export class PersonsController {
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved person.',
+    type: PersonDto,
   })
   @ApiResponse({ status: 404, description: 'Person not found.' })
   @ApiResponse({
@@ -79,7 +83,7 @@ export class PersonsController {
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async findOne(@Param('id') personId: string) {
+  async findOne(@Param('id') personId: string): Promise<PersonDto> {
     try {
       return await this.personsService.findOne(personId);
     } catch (error) {
@@ -98,6 +102,7 @@ export class PersonsController {
   @ApiResponse({
     status: 200,
     description: 'The person has been successfully updated.',
+    type: UpdateResponseDto, // Specify the response type
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 404, description: 'Person not found.' })
@@ -125,6 +130,7 @@ export class PersonsController {
   @ApiResponse({
     status: 200,
     description: 'The person has been successfully deleted.',
+    type: DeleteResponseDto, // Specify the response type
   })
   @ApiResponse({ status: 404, description: 'Person not found.' })
   @ApiResponse({
