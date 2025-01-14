@@ -3,8 +3,8 @@
 The Bank Account Service project is designed to handle the following tasks:
 
 - [x] Provide endpoints to query, create, update and delete persons, bank accounts and transactions from a Neptune graph database
-- [] (TODO) Implement the update of account balance
-- [] (TODO) Calculate the maximum amount a person can borrow from their friends based on their bank account balances.
+- [ ] (TODO) Implement the update of account balance
+- [ ] (TODO) Calculate the maximum amount a person can borrow from their friends based on their bank account balances.
 
 The project uses NestJS for the API service, AWS CDK for infrastructure as code, and Amazon Neptune as the graph database.
 
