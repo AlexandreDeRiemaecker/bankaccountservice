@@ -1,26 +1,70 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
 import { UpdateBankTransactionDto } from './dto/update-bank-transaction.dto';
+import { NeptuneService } from '../shared/neptune/neptune.service';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class BankTransactionsService {
-  create(createBankTransactionDto: CreateBankTransactionDto) {
-    return 'This action adds a new bankTransaction';
+  constructor(private readonly neptuneService: NeptuneService) {}
+
+  async create(createBankTransactionDto: CreateBankTransactionDto) {
+    this.validateAmount(createBankTransactionDto.amount);
+
+    const result = await this.neptuneService.addVertex('BankTransaction', {
+      transactionId: randomUUID(),
+      otherPersonIBAN: createBankTransactionDto.otherPersonIBAN,
+      amount: createBankTransactionDto.amount,
+    });
+    return result;
   }
 
-  findAll() {
-    return `This action returns all bankTransactions`;
+  async findAll() {
+    return await this.neptuneService.findVertices('BankTransaction');
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} bankTransaction`;
+  async findOne(transactionId: string) {
+    const transaction = await this.neptuneService.findVertexByProperty(
+      'BankTransaction',
+      'transactionId',
+      transactionId,
+    );
+
+    if (!transaction) {
+      throw new Error('BankTransaction not found');
+    }
+
+    return transaction;
   }
 
-  update(id: number, updateBankTransactionDto: UpdateBankTransactionDto) {
-    return `This action updates a #${id} bankTransaction`;
+  async update(id: string, updateBankTransactionDto: UpdateBankTransactionDto) {
+    if (updateBankTransactionDto.amount === undefined) {
+      throw new Error('Malformed request: amount is required');
+    }
+
+    this.validateAmount(updateBankTransactionDto.amount);
+
+    const updatedVertexId = await this.neptuneService.updateVertex(
+      'BankTransaction',
+      'transactionId',
+      id,
+      updateBankTransactionDto,
+    );
+    return { updatedVertexId };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} bankTransaction`;
+  async remove(id: string): Promise<{ deletedVertexId: string }> {
+    const deletedVertexId = await this.neptuneService.deleteVertex(
+      'BankTransaction',
+      'transactionId',
+      id,
+    );
+    return { deletedVertexId };
+  }
+
+  private validateAmount(amount: number) {
+    if (amount <= 0) {
+      throw new BadRequestException('Transaction amount must be positive');
+    }
   }
 }

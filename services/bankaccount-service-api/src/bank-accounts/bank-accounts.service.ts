@@ -2,12 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
+import { BankAccount } from './dto/bank-account.dto';
+import { UpdateResponseDto } from './dto/update-response.dto';
+import { DeleteResponseDto } from './dto/delete-response.dto';
 
 @Injectable()
 export class BankAccountsService {
   constructor(private readonly neptuneService: NeptuneService) {}
 
-  async create(createBankAccountDto: CreateBankAccountDto) {
+  async create(
+    createBankAccountDto: CreateBankAccountDto,
+  ): Promise<BankAccount> {
     const existingAccount = await this.neptuneService.findVertexByProperty(
       'BankAccount',
       'IBAN',
@@ -25,11 +30,11 @@ export class BankAccountsService {
     return result;
   }
 
-  async findAll() {
+  async findAll(): Promise<BankAccount[]> {
     return await this.neptuneService.findVertices('BankAccount');
   }
 
-  async findOne(id: string) {
+  async findOne(id: string): Promise<BankAccount> {
     const bankAccount = await this.neptuneService.findVertexByProperty(
       'BankAccount',
       'IBAN',
@@ -43,7 +48,10 @@ export class BankAccountsService {
     return bankAccount;
   }
 
-  async update(id: string, updateBankAccountDto: UpdateBankAccountDto) {
+  async update(
+    id: string,
+    updateBankAccountDto: UpdateBankAccountDto,
+  ): Promise<UpdateResponseDto> {
     const updatedVertexId = await this.neptuneService.updateVertex(
       'BankAccount',
       'IBAN',
@@ -53,7 +61,7 @@ export class BankAccountsService {
     return { updatedVertexId };
   }
 
-  async remove(id: string): Promise<{ deletedVertexId: string }> {
+  async remove(id: string): Promise<DeleteResponseDto> {
     const deletedVertexId = await this.neptuneService.deleteVertex(
       'BankAccount',
       'IBAN',

@@ -54,7 +54,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Example: Add a vertex with a label and properties.
+   * Add a vertex with a label and properties.
    * @param label Vertex label.
    * @param properties Vertex properties as a key-value pair.
    * @returns The added vertex.
@@ -79,7 +79,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Example: Update a vertex by its label, property, and value.
+   * Update a vertex by its label, property, and value.
    * @param label The label of the vertex to update.
    * @param idProperty The property to filter by.
    * @param idValue The value of the property to filter by.
@@ -129,7 +129,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Example: Execute a traversal to find vertices with a given label.
+   * Execute a traversal to find vertices with a given label.
    * @param label The label of the vertices to find.
    * @returns The list of vertices.
    */
