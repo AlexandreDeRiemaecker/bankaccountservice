@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 /**
  * Represents a bank transaction.
  */
-export class BankTransaction {
+export class BankTransactionDto {
   /**
    * The International Bank Account Number (IBAN) of the person receiving the transaction amount.
    */

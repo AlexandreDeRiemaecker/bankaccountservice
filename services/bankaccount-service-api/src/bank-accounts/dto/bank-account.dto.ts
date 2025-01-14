@@ -3,7 +3,7 @@
  */
 import { ApiProperty } from '@nestjs/swagger';
 
-export class BankAccount {
+export class BankAccountDto {
   @ApiProperty({
     description:
       'The International Bank Account Number (IBAN) of the bank account.',

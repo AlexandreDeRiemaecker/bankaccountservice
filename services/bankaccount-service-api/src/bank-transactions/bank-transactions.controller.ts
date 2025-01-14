@@ -14,7 +14,7 @@ import {
 import { BankTransactionsService } from './bank-transactions.service';
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
 import { UpdateBankTransactionDto } from './dto/update-bank-transaction.dto';
-import { BankTransaction } from './dto/bank-transaction.dto';
+import { BankTransactionDto } from './dto/bank-transaction.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { DeleteResponseDto } from './dto/delete-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
@@ -31,7 +31,7 @@ export class BankTransactionsController {
   @ApiResponse({
     status: 201,
     description: 'The bank transaction has been successfully created.',
-    type: BankTransaction,
+    type: BankTransactionDto,
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({
@@ -41,7 +41,7 @@ export class BankTransactionsController {
   })
   async create(
     @Body() createBankTransactionDto: CreateBankTransactionDto,
-  ): Promise<BankTransaction> {
+  ): Promise<BankTransactionDto> {
     try {
       return await this.bankTransactionsService.create(
         createBankTransactionDto,
@@ -59,14 +59,14 @@ export class BankTransactionsController {
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved bank transactions.',
-    type: [BankTransaction],
+    type: [BankTransactionDto],
   })
   @ApiResponse({
     status: 500,
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async findAll(): Promise<BankTransaction[]> {
+  async findAll(): Promise<BankTransactionDto[]> {
     try {
       return await this.bankTransactionsService.findAll();
     } catch (error) {
@@ -82,7 +82,7 @@ export class BankTransactionsController {
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved bank transaction.',
-    type: BankTransaction,
+    type: BankTransactionDto,
   })
   @ApiResponse({ status: 404, description: 'Bank transaction not found.' })
   @ApiResponse({
@@ -90,7 +90,7 @@ export class BankTransactionsController {
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async findOne(@Param('id') id: string): Promise<BankTransaction> {
+  async findOne(@Param('id') id: string): Promise<BankTransactionDto> {
     try {
       const transaction = await this.bankTransactionsService.findOne(id);
       if (!transaction) {

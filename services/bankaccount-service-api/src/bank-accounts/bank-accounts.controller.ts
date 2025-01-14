@@ -14,7 +14,7 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
-import { BankAccount } from './dto/bank-account.dto';
+import { BankAccountDto } from './dto/bank-account.dto';
 import { UpdateResponseDto } from '../bank-accounts/dto/update-response.dto';
 import { DeleteResponseDto } from '../bank-accounts/dto/delete-response.dto';
 
@@ -27,7 +27,7 @@ export class BankAccountsController {
 
   @Post()
   @ApiResponse({
-    type: BankAccount,
+    type: BankAccountDto,
   })
   @ApiResponse({
     status: 201,
@@ -46,7 +46,7 @@ export class BankAccountsController {
   })
   async create(
     @Body() createBankAccountDto: CreateBankAccountDto,
-  ): Promise<BankAccount> {
+  ): Promise<BankAccountDto> {
     try {
       return await this.bankAccountsService.create(createBankAccountDto);
     } catch (error) {
@@ -61,7 +61,7 @@ export class BankAccountsController {
   @Get()
   @ApiResponse({
     status: 200,
-    type: [BankAccount],
+    type: [BankAccountDto],
     description: 'Successfully retrieved bank accounts.',
   })
   @ApiResponse({
@@ -69,7 +69,7 @@ export class BankAccountsController {
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async findAll(): Promise<BankAccount[]> {
+  async findAll(): Promise<BankAccountDto[]> {
     try {
       return await this.bankAccountsService.findAll();
     } catch (error) {
@@ -84,7 +84,7 @@ export class BankAccountsController {
   @Get(':id')
   @ApiResponse({
     status: 200,
-    type: BankAccount,
+    type: BankAccountDto,
     description: 'Successfully retrieved bank account.',
   })
   @ApiResponse({ status: 404, description: 'Bank account not found.' })
@@ -93,7 +93,7 @@ export class BankAccountsController {
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async findOne(@Param('id') id: string): Promise<BankAccount> {
+  async findOne(@Param('id') id: string): Promise<BankAccountDto> {
     try {
       return await this.bankAccountsService.findOne(id);
     } catch (error) {

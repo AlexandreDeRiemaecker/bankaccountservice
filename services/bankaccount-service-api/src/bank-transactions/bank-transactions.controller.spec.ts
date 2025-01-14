@@ -3,7 +3,7 @@ import { BankTransactionsController } from './bank-transactions.controller';
 import { BankTransactionsService } from './bank-transactions.service';
 import { SharedModule } from '../shared/shared.module';
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
-import { BankTransaction } from './dto/bank-transaction.dto';
+import { BankTransactionDto } from './dto/bank-transaction.dto';
 import { MockFunctionMetadata, ModuleMocker } from 'jest-mock';
 
 describe('BankTransactionsController', () => {
@@ -59,7 +59,7 @@ describe('BankTransactionsController', () => {
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
       };
-      const result: BankTransaction = {
+      const result: BankTransactionDto = {
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
       };
@@ -86,7 +86,7 @@ describe('BankTransactionsController', () => {
 
   describe('findAll', () => {
     it('should return an array of bank transactions', async () => {
-      const result: BankTransaction[] = [
+      const result: BankTransactionDto[] = [
         {
           otherPersonIBAN: 'DE1234567890',
           amount: 1000,
@@ -110,7 +110,7 @@ describe('BankTransactionsController', () => {
 
   describe('findOne', () => {
     it('should return a single bank transaction', async () => {
-      const result: BankTransaction = {
+      const result: BankTransactionDto = {
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
       };

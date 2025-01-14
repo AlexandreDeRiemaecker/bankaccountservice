@@ -5,7 +5,7 @@ import { SharedModule } from '../shared/shared.module';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
-import { BankAccount } from './dto/bank-account.dto';
+import { BankAccountDto } from './dto/bank-account.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { DeleteResponseDto } from './dto/delete-response.dto';
 
@@ -60,7 +60,7 @@ describe('BankAccountsController', () => {
         IBAN: 'DE1234567890',
         currentBalance: 1000,
       };
-      const result: BankAccount = {
+      const result: BankAccountDto = {
         IBAN: 'DE1234567890',
         currentBalance: 1000,
       };
@@ -87,7 +87,7 @@ describe('BankAccountsController', () => {
 
   describe('findAll', () => {
     it('should return an array of bank accounts', async () => {
-      const result: BankAccount[] = [
+      const result: BankAccountDto[] = [
         {
           IBAN: 'DE1234567890',
           currentBalance: 1000,
@@ -111,7 +111,7 @@ describe('BankAccountsController', () => {
 
   describe('findOne', () => {
     it('should return a single bank account', async () => {
-      const result: BankAccount = {
+      const result: BankAccountDto = {
         IBAN: 'DE1234567890',
         currentBalance: 1000,
       };

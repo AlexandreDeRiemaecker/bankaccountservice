@@ -6,7 +6,7 @@ import {
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
-import { BankAccount } from './dto/bank-account.dto';
+import { BankAccountDto } from './dto/bank-account.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { DeleteResponseDto } from './dto/delete-response.dto';
 
@@ -26,7 +26,7 @@ export class BankAccountsService {
    */
   async create(
     createBankAccountDto: CreateBankAccountDto,
-  ): Promise<BankAccount> {
+  ): Promise<BankAccountDto> {
     const existingAccount = await this.neptuneService.findVertexByProperty(
       'BankAccount',
       'IBAN',
@@ -65,7 +65,7 @@ export class BankAccountsService {
    * Retrieves all bank accounts.
    * @returns An array of bank accounts.
    */
-  async findAll(): Promise<BankAccount[]> {
+  async findAll(): Promise<BankAccountDto[]> {
     return await this.neptuneService.findVertices('BankAccount');
   }
 
@@ -75,7 +75,7 @@ export class BankAccountsService {
    * @returns The bank account.
    * @throws NotFoundException if the bank account is not found.
    */
-  async findOne(id: string): Promise<BankAccount> {
+  async findOne(id: string): Promise<BankAccountDto> {
     const bankAccount = await this.neptuneService.findVertexByProperty(
       'BankAccount',
       'IBAN',

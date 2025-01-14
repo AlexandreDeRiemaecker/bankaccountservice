@@ -7,7 +7,7 @@ import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
 import { UpdateBankTransactionDto } from './dto/update-bank-transaction.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
 import { randomUUID } from 'crypto';
-import { BankTransaction } from './dto/bank-transaction.dto';
+import { BankTransactionDto } from './dto/bank-transaction.dto';
 import { DeleteResponseDto } from './dto/delete-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 
@@ -24,7 +24,7 @@ export class BankTransactionsService {
    */
   async create(
     createBankTransactionDto: CreateBankTransactionDto,
-  ): Promise<BankTransaction> {
+  ): Promise<BankTransactionDto> {
     this.validateAmount(createBankTransactionDto.amount);
     // Ensure the other person's bank account exists
     const otherPersonBankAccount =
@@ -77,7 +77,7 @@ export class BankTransactionsService {
    * Retrieves all bank transactions.
    * @returns An array of bank transactions.
    */
-  async findAll(): Promise<BankTransaction[]> {
+  async findAll(): Promise<BankTransactionDto[]> {
     const transactions =
       await this.neptuneService.findVertices('BankTransaction');
     return transactions.map((transaction) => ({
@@ -93,7 +93,7 @@ export class BankTransactionsService {
    * @returns The bank transaction with the specified ID.
    * @throws NotFoundException if the bank transaction is not found.
    */
-  async findOne(transactionId: string): Promise<BankTransaction> {
+  async findOne(transactionId: string): Promise<BankTransactionDto> {
     const transaction = await this.neptuneService.findVertexByProperty(
       'BankTransaction',
       'transactionId',
