@@ -9,8 +9,8 @@ The Bank Account Service project is designed to handle the following tasks:
 The project uses NestJS for the API service, AWS CDK for infrastructure as code, and Amazon Neptune as the graph database.
 
 ## SwaggerUI and OpenAPI spec
-The Swagger UI for the main branch is accessible under https://5qh762e820.execute-api.us-east-1.amazonaws.com/v1/swagger .
-The OpenAPI spec can be downloaded from https://5qh762e820.execute-api.us-east-1.amazonaws.com/v1/swagger-json .
+The Swagger UI for the main branch is accessible under [/v1/swagger](https://5qh762e820.execute-api.us-east-1.amazonaws.com/v1/swagger).
+The OpenAPI spec can be downloaded from [/v1/swagger-json](https://5qh762e820.execute-api.us-east-1.amazonaws.com/v1/swagger-json) .
 
 ## Getting Started
 
