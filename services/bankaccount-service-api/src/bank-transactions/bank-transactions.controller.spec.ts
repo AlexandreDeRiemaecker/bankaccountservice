@@ -132,7 +132,11 @@ describe('BankTransactionsController', () => {
 
   describe('update', () => {
     it('should update a bank transaction', async () => {
-      const updateBankTransactionDto = { amount: 2000 };
+      const updateBankTransactionDto = {
+        amount: 2000,
+        otherPersonIBAN: 'DE1234567890',
+        bankAccountIBAN: 'DE9876543210',
+      };
       const result = { updatedVertexId: 'updatedVertexId' };
       jest.spyOn(service, 'update').mockResolvedValue(result);
 
@@ -142,7 +146,11 @@ describe('BankTransactionsController', () => {
     });
 
     it('should throw an error if update fails', async () => {
-      const updateBankTransactionDto = { amount: 2000 };
+      const updateBankTransactionDto = {
+        amount: 2000,
+        otherPersonIBAN: 'DE1234567890',
+        bankAccountIBAN: 'DE9876543210',
+      };
       jest
         .spyOn(service, 'update')
         .mockRejectedValue(new Error('Update failed'));

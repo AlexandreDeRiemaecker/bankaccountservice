@@ -140,6 +140,8 @@ describe('BankTransactionsService', () => {
 
   it('should update a bank transaction', async () => {
     const updateBankTransactionDto: UpdateBankTransactionDto = {
+      bankAccountIBAN: 'DE9876543210',
+      otherPersonIBAN: 'DE123456789',
       amount: 2000,
     };
 
@@ -155,7 +157,10 @@ describe('BankTransactionsService', () => {
   });
 
   it('should throw an error if update amount is not provided', async () => {
-    const updateBankTransactionDto: UpdateBankTransactionDto = {};
+    const updateBankTransactionDto: UpdateBankTransactionDto = {
+      bankAccountIBAN: 'DE987654321',
+      otherPersonIBAN: 'DE123456789',
+    };
 
     await expect(
       service.update('transactionId', updateBankTransactionDto),

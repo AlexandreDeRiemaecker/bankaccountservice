@@ -1,11 +1,34 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateBankAccountDto } from './create-bank-account.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsIBAN, IsNumber, IsOptional, IsUUID } from 'class-validator';
 
 /**
  * Data Transfer Object (DTO) for updating a bank account.
- * This class extends the PartialType of CreateBankAccountDto,
- * making all properties of CreateBankAccountDto optional.
- *
- * @extends PartialType(CreateBankAccountDto)
  */
-export class UpdateBankAccountDto extends PartialType(CreateBankAccountDto) {}
+export class UpdateBankAccountDto {
+  /**
+   * The International Bank Account Number (IBAN) of the bank account.
+   * @optional
+   */
+  @IsIBAN()
+  @ApiPropertyOptional()
+  @IsOptional()
+  IBAN?: string;
+
+  /**
+   * The current balance of the bank account.
+   * @optional
+   */
+  @IsNumber()
+  @ApiPropertyOptional()
+  @IsOptional()
+  currentBalance?: number;
+
+  /**
+   * The unique identifier of the person who owns the bank account.
+   * @optional
+   */
+  @IsUUID()
+  @ApiPropertyOptional()
+  @IsOptional()
+  personId?: string;
+}
