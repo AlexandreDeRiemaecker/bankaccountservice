@@ -3,7 +3,7 @@ import {
   ExecuteGremlinQueryCommand,
 } from "@aws-sdk/client-neptunedata";
 import { CloudFormationCustomResourceEvent } from "aws-lambda";
-import { randomUUID } from 'crypto';
+import { randomUUID } from "crypto";
 
 export const handler = async (event: CloudFormationCustomResourceEvent) => {
   const requestType = event.RequestType;
@@ -29,7 +29,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
   const region = process.env.AWS_REGION;
   const endpoint = `https://${event.ResourceProperties.NeptuneEndpointHostname}:${event.ResourceProperties.NeptuneEndpointPort}`;
 
-  // choosing retry mode "adaptive" is mandatory here, as the neptune cluster can take quite 
+  // choosing retry mode "adaptive" is mandatory here, as the neptune cluster can take quite
   // some time to be actually reachable after creation
   const client = new NeptunedataClient({
     region,
@@ -83,7 +83,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       .mergeV([(T.id): 'acc-1'])
         .option(onCreate, [
           (T.label)      : 'BankAccount',
-          IBAN           : 'DE123',
+          IBAN           : 'DE89370400440532013000',
           currentBalance : 1000
         ])
         .option(onMatch, [
@@ -93,7 +93,7 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
       .mergeV([(T.id): 'acc-2'])
         .option(onCreate, [
           (T.label)      : 'BankAccount',
-          IBAN           : 'DE456',
+          IBAN           : 'DE89370400440532013001',
           currentBalance : 2000
         ])
         .option(onMatch, [
@@ -105,23 +105,23 @@ export const handler = async (event: CloudFormationCustomResourceEvent) => {
         .option(onCreate, [
           (T.label)       : 'BankTransaction',
           transactionId   : '${randomUUID()}',
-          otherPersonIBAN : 'DE999',
-          amount          : -150
+          otherPersonIBAN : 'DE89370400440532013002',
+          amount          : 150
         ])
         .option(onMatch, [
-          otherPersonIBAN : 'DE999',
-          amount          : -150
+          otherPersonIBAN : 'DE89370400440532013002',
+          amount          : 300
         ])
 
       .mergeV([(T.id): 'tx-2'])
         .option(onCreate, [
           (T.label)       : 'BankTransaction',
           transactionId   : '${randomUUID()}',
-          otherPersonIBAN : 'DE456',
+          otherPersonIBAN : 'DE89370400440532013001',
           amount          : 300
         ])
         .option(onMatch, [
-          otherPersonIBAN : 'DE456',
+          otherPersonIBAN : 'DE89370400440532013001',
           amount          : 300
         ])
 
