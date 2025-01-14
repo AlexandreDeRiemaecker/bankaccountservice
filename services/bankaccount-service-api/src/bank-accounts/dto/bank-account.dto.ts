@@ -1,9 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BankAccount {
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      'The International Bank Account Number (IBAN) of the bank account.',
+  })
   IBAN: string;
 
-  @ApiProperty()
+  @ApiProperty({ description: 'The current balance of the bank account.' })
   currentBalance: number;
 }

@@ -7,7 +7,7 @@ import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
 import { UpdateBankTransactionDto } from './dto/update-bank-transaction.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
 import { randomUUID } from 'crypto';
-import { BankTransaction } from './entities/bank-transaction.entity';
+import { BankTransaction } from './dto/bank-transaction.dto';
 
 @Injectable()
 export class BankTransactionsService {

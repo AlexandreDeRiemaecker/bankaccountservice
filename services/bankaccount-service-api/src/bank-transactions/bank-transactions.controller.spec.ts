@@ -3,7 +3,7 @@ import { BankTransactionsController } from './bank-transactions.controller';
 import { BankTransactionsService } from './bank-transactions.service';
 import { SharedModule } from '../shared/shared.module';
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
-import { BankTransaction } from './entities/bank-transaction.entity';
+import { BankTransaction } from './dto/bank-transaction.dto';
 import { MockFunctionMetadata, ModuleMocker } from 'jest-mock';
 
 describe('BankTransactionsController', () => {

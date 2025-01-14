@@ -3,12 +3,15 @@ import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
 import { randomUUID } from 'crypto';
+import { UpdateResponseDto } from './dto/update-response.dto';
+import { DeleteResponseDto } from './dto/delete-response.dto';
+import { Person } from './dto/person.dto';
 
 @Injectable()
 export class PersonsService {
   constructor(private readonly neptuneService: NeptuneService) {}
 
-  async create(createPersonDto: CreatePersonDto) {
+  async create(createPersonDto: CreatePersonDto): Promise<Person> {
     const result = await this.neptuneService.addVertex('Person', {
       personId: randomUUID(),
       name: createPersonDto.name,
@@ -21,7 +24,7 @@ export class PersonsService {
     return await this.neptuneService.findVertices('Person');
   }
 
-  async findOne(personId: string) {
+  async findOne(personId: string): Promise<Person> {
     const person = await this.neptuneService.findVertexByProperty(
       'Person',
       'personId',
@@ -35,7 +38,10 @@ export class PersonsService {
     return person;
   }
 
-  async update(id: string, updatePersonDto: UpdatePersonDto) {
+  async update(
+    id: string,
+    updatePersonDto: UpdatePersonDto,
+  ): Promise<UpdateResponseDto> {
     const updatedVertexId = await this.neptuneService.updateVertex(
       'Person',
       'personId',
@@ -45,7 +51,7 @@ export class PersonsService {
     return { updatedVertexId };
   }
 
-  async remove(id: string): Promise<{ deletedVertexId: string }> {
+  async remove(id: string): Promise<DeleteResponseDto> {
     const deletedVertexId = await this.neptuneService.deleteVertex(
       'Person',
       'personId',
