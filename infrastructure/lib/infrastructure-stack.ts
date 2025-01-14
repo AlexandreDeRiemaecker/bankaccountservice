@@ -3,8 +3,10 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as cr from "aws-cdk-lib/custom-resources";
-import { Construct } from "constructs";
 import * as neptune from "@aws-cdk/aws-neptune-alpha";
+import * as apgw from "aws-cdk-lib/aws-apigateway";
+import * as logs from "aws-cdk-lib/aws-logs";
+import { Construct } from "constructs";
 
 export class InfrastructureStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -51,6 +53,49 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Hook a Lambda to neptune cluster created/updated events to upsert default data into the neptune database
     this.upsertDataAfterCreateOrUpdate(vpc, neptuneCluster);
+
+    // Lambda function to handle API requests via a bundled NestJS Lambdalith
+    const apiNestHandlerFunction = new lambda.Function(
+      this,
+      "BankAccountService-NestJS-Lambda",
+      {
+        code: lambda.Code.fromAsset("../services/bankaccount-service-api/dist"),
+        description: "Handles BankAccountService API requests via a bundled NestJS Lambda",
+        vpc: vpc,
+        runtime: lambda.Runtime.NODEJS_22_X,
+        handler: "main.handler",
+        environment: {
+          NEPTUNE_ENDPOINT_HOSTNAME: neptuneCluster.clusterEndpoint.hostname,
+          NEPTUNE_ENDPOINT_PORT: neptuneCluster.clusterEndpoint.port.toString(),
+          AWSRegion: this.region,
+        },
+      }
+    );
+
+    // Allow Lambda to connect to Neptune’s port
+    neptuneCluster.connections.allowDefaultPortFrom(apiNestHandlerFunction);
+
+    // API-Gateway that proxies the Lambda function
+    const api = new apgw.RestApi(this, "BankAccountService-Api", {
+      deploy: true,
+      cloudWatchRole: true,
+      deployOptions: {
+        stageName: "v1",
+        loggingLevel: apgw.MethodLoggingLevel.INFO,
+        dataTraceEnabled: true,
+        accessLogDestination: new apgw.LogGroupLogDestination(
+          new logs.LogGroup(this, "BankAccountService-Api-APIGWAccessLogs")
+        ),
+        accessLogFormat: apgw.AccessLogFormat.jsonWithStandardFields(),
+      },
+    });
+
+    // Add a proxy integration targeting the lambda
+    api.root.addProxy({
+      defaultIntegration: new apgw.LambdaIntegration(apiNestHandlerFunction, {
+        proxy: true,
+      }),
+    });
   }
 
   /**
@@ -69,10 +114,9 @@ export class InfrastructureStack extends cdk.Stack {
       this,
       "BankAccountService-InitNeptuneLambda",
       {
-        description:
-          "Upserts default data into neptune db on create/update",
+        description: "Upserts default data into neptune db on create/update",
         code: lambda.Code.fromAsset(
-          "../services/account-balance-importdata-oncreate/src"
+          "../services/bankaccount-service-importdata/src"
         ),
         handler: "index.handler",
         runtime: lambda.Runtime.NODEJS_22_X,

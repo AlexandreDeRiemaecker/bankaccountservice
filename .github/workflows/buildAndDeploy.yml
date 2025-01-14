@@ -1,19 +1,38 @@
 name: Build and deploy
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup Node.js environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 22.x
           cache: "yarn"
           cache-dependency-path: "yarn.lock"
-      - run: yarn install --frozen-lockfile
-      - run: yarn run deploy
+
+      # Install dependencies
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # Build the project
+      - name: Build project
+        run: yarn run build
+
+      # Run tests
+      - name: Run tests
+        run: yarn run test
+
+      # Deploy the project
+      - name: Deploy project
+        run: yarn run deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

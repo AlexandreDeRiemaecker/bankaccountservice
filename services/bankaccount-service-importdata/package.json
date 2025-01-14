@@ -1,5 +1,5 @@
 {
-  "name": "account-balance-importdata-oncreate",
+  "name": "bankaccountservice-importdata",
   "version": "1.0.0",
   "private": true,
   "scripts": {
