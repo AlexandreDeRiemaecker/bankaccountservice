@@ -88,7 +88,7 @@ export class PersonsController {
         error.stack,
       );
       throw new HttpException(
-        { message: error.message || 'Failed to retrieve person', error },
+        { message: 'Failed to retrieve person', error },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
