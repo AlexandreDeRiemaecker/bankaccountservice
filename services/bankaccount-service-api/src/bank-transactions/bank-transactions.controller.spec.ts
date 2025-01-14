@@ -55,11 +55,13 @@ describe('BankTransactionsController', () => {
   describe('create', () => {
     it('should create a bank transaction', async () => {
       const createBankTransactionDto: CreateBankTransactionDto = {
+        transactionId: 'transactionId',
         bankAccountIBAN: 'DE9876543210',
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
       };
       const result: BankTransactionDto = {
+        transactionId: 'transactionId',
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
       };
@@ -70,6 +72,7 @@ describe('BankTransactionsController', () => {
 
     it('should throw an error if creation fails', async () => {
       const createBankTransactionDto: CreateBankTransactionDto = {
+        transactionId: 'transactionId',
         bankAccountIBAN: 'DE9876543210',
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
@@ -88,6 +91,7 @@ describe('BankTransactionsController', () => {
     it('should return an array of bank transactions', async () => {
       const result: BankTransactionDto[] = [
         {
+          transactionId: 'transactionId',
           otherPersonIBAN: 'DE1234567890',
           amount: 1000,
         },
@@ -111,6 +115,7 @@ describe('BankTransactionsController', () => {
   describe('findOne', () => {
     it('should return a single bank transaction', async () => {
       const result: BankTransactionDto = {
+        transactionId: 'transactionId',
         otherPersonIBAN: 'DE1234567890',
         amount: 1000,
       };

@@ -6,7 +6,6 @@ import {
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
 import { UpdateBankTransactionDto } from './dto/update-bank-transaction.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
-import { randomUUID } from 'crypto';
 import { BankTransactionDto } from './dto/bank-transaction.dto';
 import { DeleteResponseDto } from './dto/delete-response.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
@@ -50,7 +49,7 @@ export class BankTransactionsService {
 
     // Create the transaction vertex
     const transaction = await this.neptuneService.addVertex('BankTransaction', {
-      transactionId: randomUUID(),
+      transactionId: createBankTransactionDto.transactionId,
       bankAccountIBAN: createBankTransactionDto.bankAccountIBAN,
       otherPersonIBAN: createBankTransactionDto.otherPersonIBAN,
       amount: createBankTransactionDto.amount,
@@ -81,16 +80,16 @@ export class BankTransactionsService {
     const transactions =
       await this.neptuneService.findVertices('BankTransaction');
     return transactions.map((transaction) => ({
-      id: transaction.id,
+      transactionId: transaction.transactionId,
       otherPersonIBAN: transaction.otherPersonIBAN,
       amount: transaction.amount,
     }));
   }
 
   /**
-   * Retrieves a bank transaction by its ID.
-   * @param transactionId - The ID of the bank transaction to retrieve.
-   * @returns The bank transaction with the specified ID.
+   * Retrieves a bank transaction by its transactionId.
+   * @param transactionId - The transactionId of the bank transaction to retrieve.
+   * @returns The bank transaction with the specified transactionId.
    * @throws NotFoundException if the bank transaction is not found.
    */
   async findOne(transactionId: string): Promise<BankTransactionDto> {
@@ -109,13 +108,13 @@ export class BankTransactionsService {
 
   /**
    * Updates a bank transaction.
-   * @param id - The ID of the bank transaction to update.
+   * @param transactionId - The transactionId of the bank transaction to update.
    * @param updateBankTransactionDto - Data transfer object for updating a bank transaction.
    * @returns The response containing the updated vertex ID.
    * @throws BadRequestException if the request is malformed or the transaction amount is invalid.
    */
   async update(
-    id: string,
+    transactionId: string,
     updateBankTransactionDto: UpdateBankTransactionDto,
   ): Promise<UpdateResponseDto> {
     if (updateBankTransactionDto.amount === undefined) {
@@ -127,7 +126,7 @@ export class BankTransactionsService {
     const updatedVertexId = await this.neptuneService.updateVertex(
       'BankTransaction',
       'transactionId',
-      id,
+      transactionId,
       updateBankTransactionDto,
     );
     return { updatedVertexId };
@@ -135,14 +134,14 @@ export class BankTransactionsService {
 
   /**
    * Deletes a bank transaction.
-   * @param id - The ID of the bank transaction to delete.
+   * @param transactionId - The transactionId of the bank transaction to delete.
    * @returns The response containing the deleted vertex ID.
    */
-  async remove(id: string): Promise<DeleteResponseDto> {
+  async remove(transactionId: string): Promise<DeleteResponseDto> {
     const deletedVertexId: string = await this.neptuneService.deleteVertex(
       'BankTransaction',
       'transactionId',
-      id,
+      transactionId,
     );
     return { deletedVertexId };
   }

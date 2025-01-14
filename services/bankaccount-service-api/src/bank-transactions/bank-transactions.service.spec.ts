@@ -30,6 +30,7 @@ describe('BankTransactionsService', () => {
 
   it('should create a new bank transaction', async () => {
     const createBankTransactionDto: CreateBankTransactionDto = {
+      transactionId: 'transactionId',
       bankAccountIBAN: 'DE9876543210',
       otherPersonIBAN: 'DE1234567890',
       amount: 1000,
@@ -61,6 +62,7 @@ describe('BankTransactionsService', () => {
 
   it('should throw an error if bank account is not found', async () => {
     const createBankTransactionDto: CreateBankTransactionDto = {
+      transactionId: 'transactionId',
       bankAccountIBAN: 'DE9876543210',
       otherPersonIBAN: 'DE1234567890',
       amount: 1000,
@@ -75,8 +77,16 @@ describe('BankTransactionsService', () => {
 
   it('should find all bank transactions', async () => {
     const bankTransactions = [
-      { id: '1', amount: 1000, otherPersonIBAN: 'DE1234567890' },
-      { id: '2', amount: 2000, otherPersonIBAN: 'DE0987654321' },
+      {
+        transactionId: 'transactionId1',
+        amount: 1000,
+        otherPersonIBAN: 'DE1234567890',
+      },
+      {
+        transactionId: 'transactionId2',
+        amount: 2000,
+        otherPersonIBAN: 'DE0987654321',
+      },
     ];
 
     jest
@@ -89,7 +99,7 @@ describe('BankTransactionsService', () => {
 
   it('should find one bank transaction', async () => {
     const bankTransaction = {
-      id: 'transactionId',
+      transactionId: 'transactionId',
       amount: 1000,
       otherPersonIBAN: 'DE1234567890',
     };
@@ -112,6 +122,7 @@ describe('BankTransactionsService', () => {
 
   it('should throw an error if other person bank account is not found', async () => {
     const createBankTransactionDto: CreateBankTransactionDto = {
+      transactionId: 'transactionId',
       bankAccountIBAN: 'DE9876543210',
       otherPersonIBAN: 'DE1234567890',
       amount: 1000,
@@ -128,6 +139,7 @@ describe('BankTransactionsService', () => {
 
   it('should throw an error if transaction amount is not positive', async () => {
     const createBankTransactionDto: CreateBankTransactionDto = {
+      transactionId: 'transactionId',
       bankAccountIBAN: 'DE9876543210',
       otherPersonIBAN: 'DE1234567890',
       amount: -1000,

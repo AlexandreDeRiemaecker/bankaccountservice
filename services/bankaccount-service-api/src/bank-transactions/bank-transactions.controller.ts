@@ -78,7 +78,7 @@ export class BankTransactionsController {
     }
   }
 
-  @Get(':id')
+  @Get(':transactionId')
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved bank transaction.',
@@ -90,11 +90,16 @@ export class BankTransactionsController {
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async findOne(@Param('id') id: string): Promise<BankTransactionDto> {
+  async findOne(
+    @Param('transactionId') transactionId: string,
+  ): Promise<BankTransactionDto> {
     try {
-      const transaction = await this.bankTransactionsService.findOne(id);
+      const transaction =
+        await this.bankTransactionsService.findOne(transactionId);
       if (!transaction) {
-        throw new NotFoundException(`Bank transaction with id ${id} not found`);
+        throw new NotFoundException(
+          `Bank transaction with transactionId ${transactionId} not found`,
+        );
       }
       return transaction;
     } catch (error) {
@@ -109,7 +114,7 @@ export class BankTransactionsController {
     }
   }
 
-  @Patch(':id')
+  @Patch(':transactionId')
   @ApiResponse({
     status: 200,
     description: 'The bank transaction has been successfully updated.',
@@ -123,16 +128,18 @@ export class BankTransactionsController {
     type: HttpException,
   })
   async update(
-    @Param('id') id: string,
+    @Param('transactionId') transactionId: string,
     @Body() updateBankTransactionDto: UpdateBankTransactionDto,
   ): Promise<UpdateResponseDto> {
     try {
       const updatedTransaction = await this.bankTransactionsService.update(
-        id,
+        transactionId,
         updateBankTransactionDto,
       );
       if (!updatedTransaction) {
-        throw new NotFoundException(`Bank transaction with id ${id} not found`);
+        throw new NotFoundException(
+          `Bank transaction with transactionId ${transactionId} not found`,
+        );
       }
       return updatedTransaction;
     } catch (error) {
@@ -144,7 +151,7 @@ export class BankTransactionsController {
     }
   }
 
-  @Delete(':id')
+  @Delete(':transactionId')
   @ApiResponse({
     status: 200,
     description: 'The bank transaction has been successfully deleted.',
@@ -156,11 +163,16 @@ export class BankTransactionsController {
     description: 'Internal Server Error.',
     type: HttpException,
   })
-  async remove(@Param('id') id: string): Promise<DeleteResponseDto> {
+  async remove(
+    @Param('transactionId') transactionId: string,
+  ): Promise<DeleteResponseDto> {
     try {
-      const deletedTransaction = await this.bankTransactionsService.remove(id);
+      const deletedTransaction =
+        await this.bankTransactionsService.remove(transactionId);
       if (!deletedTransaction) {
-        throw new NotFoundException(`Bank transaction with id ${id} not found`);
+        throw new NotFoundException(
+          `Bank transaction with transactionId ${transactionId} not found`,
+        );
       }
       return deletedTransaction;
     } catch (error) {
