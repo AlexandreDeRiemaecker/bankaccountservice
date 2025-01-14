@@ -1,14 +1,21 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
 import { UpdateBankTransactionDto } from './dto/update-bank-transaction.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
 import { randomUUID } from 'crypto';
+import { BankTransaction } from './entities/bank-transaction.entity';
 
 @Injectable()
 export class BankTransactionsService {
   constructor(private readonly neptuneService: NeptuneService) {}
 
-  async create(createBankTransactionDto: CreateBankTransactionDto) {
+  async create(
+    createBankTransactionDto: CreateBankTransactionDto,
+  ): Promise<BankTransaction> {
     this.validateAmount(createBankTransactionDto.amount);
 
     const result = await this.neptuneService.addVertex('BankTransaction', {
@@ -19,11 +26,11 @@ export class BankTransactionsService {
     return result;
   }
 
-  async findAll() {
+  async findAll(): Promise<BankTransaction[]> {
     return await this.neptuneService.findVertices('BankTransaction');
   }
 
-  async findOne(transactionId: string) {
+  async findOne(transactionId: string): Promise<BankTransaction> {
     const transaction = await this.neptuneService.findVertexByProperty(
       'BankTransaction',
       'transactionId',
@@ -31,15 +38,18 @@ export class BankTransactionsService {
     );
 
     if (!transaction) {
-      throw new Error('BankTransaction not found');
+      throw new NotFoundException('BankTransaction not found');
     }
 
     return transaction;
   }
 
-  async update(id: string, updateBankTransactionDto: UpdateBankTransactionDto) {
+  async update(
+    id: string,
+    updateBankTransactionDto: UpdateBankTransactionDto,
+  ): Promise<{ updatedVertexId: string }> {
     if (updateBankTransactionDto.amount === undefined) {
-      throw new Error('Malformed request: amount is required');
+      throw new BadRequestException('Malformed request: amount is required');
     }
 
     this.validateAmount(updateBankTransactionDto.amount);
