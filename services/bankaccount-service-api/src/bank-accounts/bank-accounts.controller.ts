@@ -10,7 +10,7 @@ import {
   Patch,
   Delete,
 } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiResponse } from '@nestjs/swagger';
 import { BankAccountsService } from './bank-accounts.service';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
@@ -18,7 +18,6 @@ import { BankAccountDto } from './dto/bank-account.dto';
 import { UpdateResponseDto } from '../bank-accounts/dto/update-response.dto';
 import { DeleteResponseDto } from '../bank-accounts/dto/delete-response.dto';
 
-@ApiTags('bank-accounts')
 @Controller('bank-accounts')
 export class BankAccountsController {
   private readonly logger = new Logger(BankAccountsController.name);
