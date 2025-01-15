@@ -93,13 +93,15 @@ export class FriendshipsService {
    */
   async findOne(person1Id: string, person2Id: string): Promise<any> {
     try {
-      const edge = await this.neptuneService.findEdgeBetweenVertices(
-        'has_friend',
-        'Person',
-        'personId',
-        person1Id,
-        person2Id,
-      );
+      const edge = await this.neptuneService
+        .findEdgeBetweenVertices(
+          'has_friend',
+          'Person',
+          'personId',
+          person1Id,
+          person2Id,
+        )
+        .catch(() => null);
       if (!edge) {
         throw new NotFoundException(
           `Friendship between persons ${person1Id} and ${person2Id} not found`,

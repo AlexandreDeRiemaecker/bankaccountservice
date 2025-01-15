@@ -372,7 +372,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
    * @param idProperty The property to filter by.
    * @param fromId The ID of the starting vertex.
    * @param toId The ID of the ending vertex.
-   * @returns The found edge.
+   * @returns The found edge with connected vertices.
    */
   async findEdgeBetweenVertices(
     label: string,
@@ -380,21 +380,30 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
     idProperty: string,
     fromId: string,
     toId: string,
-  ): Promise<number | null> {
+  ): Promise<{ from: any; to: any } | null> {
     try {
       const edge = await this.g
         .V()
         .hasLabel(vertexLabel)
         .has(idProperty, fromId)
         .bothE(label)
-        .where(this.g.V().has(idProperty, toId))
+        .has(idProperty, toId)
         .next();
 
-      if (edge.value) {
-        return edge.value.id;
-      } else {
+      if (!edge.value) {
+        // Return null if edge is not found
         return null;
       }
+
+      const vertices = await this.g
+        .E(edge.value)
+        .bothV()
+        .valueMap(true)
+        .toList();
+      if (vertices.length === 2) {
+        return { from: vertices[0], to: vertices[1] };
+      }
+      throw new Error('Invalid edge vertices.');
     } catch (error) {
       this.logger.error('Error finding edge between vertices:', error);
       throw error;
