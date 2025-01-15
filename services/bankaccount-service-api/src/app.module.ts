@@ -7,6 +7,7 @@ import { BankTransactionsModule } from './bank-transactions/bank-transactions.mo
 import { NeptuneService } from './shared/neptune/neptune.service';
 import { SharedModule } from './shared/shared.module';
 
+/* istanbul ignore file */
 @Module({
   imports: [
     PersonsModule,

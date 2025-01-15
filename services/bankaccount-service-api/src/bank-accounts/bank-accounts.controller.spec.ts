@@ -8,6 +8,7 @@ import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
 import { BankAccountDto } from './dto/bank-account.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { DeleteResponseDto } from './dto/delete-response.dto';
+import { EmptyLogger } from '../EmptyLogger';
 
 describe('BankAccountsController', () => {
   let controller: BankAccountsController;
@@ -25,6 +26,7 @@ describe('BankAccountsController', () => {
       imports: [SharedModule],
       controllers: [BankAccountsController],
     })
+      .setLogger(new EmptyLogger())
       .useMocker((token) => {
         if (token === BankAccountsService) {
           return {

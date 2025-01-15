@@ -92,7 +92,7 @@ export class BankTransactionsController {
   })
   async findOne(
     @Param('transactionId') transactionId: string,
-  ): Promise<BankTransactionDto> {
+  ): Promise<BankTransactionDto | null> {
     try {
       const transaction =
         await this.bankTransactionsService.findOne(transactionId);
@@ -106,7 +106,7 @@ export class BankTransactionsController {
       this.logger.error('Failed to retrieve bank transaction', error.stack);
       throw new HttpException(
         {
-          message: error.message || 'Failed to retrieve bank transaction',
+          message: 'Failed to retrieve bank transaction',
           error,
         },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -132,18 +132,15 @@ export class BankTransactionsController {
     @Body() updateBankTransactionDto: UpdateBankTransactionDto,
   ): Promise<UpdateResponseDto> {
     try {
-      const updatedTransaction = await this.bankTransactionsService.update(
+      return await this.bankTransactionsService.update(
         transactionId,
         updateBankTransactionDto,
       );
-      if (!updatedTransaction) {
-        throw new NotFoundException(
-          `Bank transaction with transactionId ${transactionId} not found`,
-        );
-      }
-      return updatedTransaction;
     } catch (error) {
-      this.logger.error('Failed to update bank transaction', error.stack);
+      this.logger.error(
+        `Failed to update bank transaction with id ${transactionId}`,
+        error.stack,
+      );
       throw new HttpException(
         { message: 'Failed to update bank transaction', error },
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -167,16 +164,12 @@ export class BankTransactionsController {
     @Param('transactionId') transactionId: string,
   ): Promise<DeleteResponseDto> {
     try {
-      const deletedTransaction =
-        await this.bankTransactionsService.remove(transactionId);
-      if (!deletedTransaction) {
-        throw new NotFoundException(
-          `Bank transaction with transactionId ${transactionId} not found`,
-        );
-      }
-      return deletedTransaction;
+      return await this.bankTransactionsService.remove(transactionId);
     } catch (error) {
-      this.logger.error('Failed to delete bank transaction', error.stack);
+      this.logger.error(
+        `Failed to delete bank transaction with id ${transactionId}`,
+        error.stack,
+      );
       throw new HttpException(
         { message: 'Failed to delete bank transaction', error },
         HttpStatus.INTERNAL_SERVER_ERROR,

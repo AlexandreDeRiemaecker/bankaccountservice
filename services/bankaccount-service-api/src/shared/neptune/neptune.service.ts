@@ -1,4 +1,9 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleDestroy,
+  OnModuleInit,
+  Logger,
+} from '@nestjs/common';
 import { driver, process as gprocess, structure } from 'gremlin';
 
 /**
@@ -9,6 +14,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
   private readonly gremlinClient: driver.Client;
   private readonly g: gprocess.GraphTraversalSource;
   private readonly endpoint: string;
+  private readonly logger = new Logger(NeptuneService.name);
 
   constructor() {
     const hostname = process.env.NEPTUNE_ENDPOINT_HOSTNAME;
@@ -45,7 +51,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
    * Lifecycle hook that is called when the module is initialized.
    */
   onModuleInit() {
-    console.log(
+    this.logger.log(
       `NeptuneService initialized with Gremlin endpoint: ${this.endpoint}`,
     );
   }
@@ -55,12 +61,14 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
    * Closes the Gremlin client.
    */
   async onModuleDestroy() {
-    console.log('NeptuneService is being destroyed. Closing Gremlin client.');
+    this.logger.log(
+      'NeptuneService is being destroyed. Closing Gremlin client.',
+    );
     try {
       await this.gremlinClient.close();
-      console.log('Gremlin client closed successfully.');
+      this.logger.log('Gremlin client closed successfully.');
     } catch (error) {
-      console.error('Error closing Gremlin client:', error);
+      this.logger.error('Error closing Gremlin client:', error);
     }
   }
 
@@ -81,10 +89,10 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
       }
 
       const result = await traversal.next();
-      console.log('Added vertex:', JSON.stringify(result, null, 2));
+      this.logger.log('Added vertex:', JSON.stringify(result, null, 2));
       return result.value;
     } catch (error) {
-      console.error('Error adding vertex:', error);
+      this.logger.error('Error adding vertex:', error);
       throw error;
     }
   }
@@ -108,10 +116,10 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
         .to(this.g.V(toVertexId))
         .next();
 
-      console.log('Added edge:', JSON.stringify(result, null, 2));
+      this.logger.log('Added edge:', JSON.stringify(result, null, 2));
       return result.value;
     } catch (error) {
-      console.error('Error adding edge:', error);
+      this.logger.error('Error adding edge:', error);
       throw error;
     }
   }
@@ -133,35 +141,45 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
     try {
       let traversal = this.g.V().hasLabel(label).has(idProperty, idValue);
 
-      // Apply updates
+      // Apply updates using sideEffect
       for (const [key, newValue] of Object.entries(updates)) {
         if (newValue !== undefined) {
-          traversal = traversal.property(
-            gprocess.cardinality.single,
-            key,
-            newValue,
+          traversal = traversal.sideEffect(
+            traversal.property(gprocess.cardinality.single, key, newValue),
           );
         }
       }
 
-      // retrieve the vertex ID after updates
-      const result = await traversal.id().next();
+      // Use constant to indicate the update was performed
+      const result = await traversal.constant('updated').next();
 
-      if (!result.value) {
-        throw new Error('Failed to update vertex or retrieve the ID.');
+      if (result.value !== 'updated') {
+        throw new Error('Failed to update vertex.');
       }
 
-      console.log('Updated vertex and retrieved ID:', {
+      // Retrieve the vertex ID after updates
+      const vertexIdResult = await this.g
+        .V()
+        .hasLabel(label)
+        .has(idProperty, idValue)
+        .id()
+        .next();
+
+      if (!vertexIdResult.value) {
+        throw new Error('Failed to retrieve the updated vertex ID.');
+      }
+
+      this.logger.log('Updated vertex and retrieved ID:', {
         label,
         idProperty: idProperty,
         idValue: idValue,
         updates,
-        vertexId: result.value,
+        vertexId: vertexIdResult.value,
       });
 
-      return result.value; // Return the updated vertex ID.
+      return vertexIdResult.value; // Return the updated vertex ID.
     } catch (error) {
-      console.error('Error updating vertex:', error);
+      this.logger.error('Error updating vertex:', error);
       throw error;
     }
   }
@@ -199,10 +217,10 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
         return obj;
       });
 
-      console.log('Found vertices:', JSON.stringify(result, null, 2));
+      this.logger.log('Found vertices:', JSON.stringify(result, null, 2));
       return result;
     } catch (error) {
-      console.error('Error finding vertices:', error);
+      this.logger.error('Error finding vertices:', error);
       return [];
     }
   }
@@ -266,7 +284,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
   ): Promise<string> {
     try {
       // Locate the vertex and retrieve its ID
-      const result = await this.g
+      const result: gprocess.Traverser[] = await this.g
         .V()
         .hasLabel(label) // Filter by label
         .has(idProperty, idValue) // Filter by property and its value
@@ -282,16 +300,30 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
 
       const vertexId = result[0];
 
-      // Delete the vertex by its ID
-      await this.g.V(vertexId).drop().iterate();
+      // Delete the vertex by its ID using sideEffect(drop()).constant('gone')
+      const deleteResult: { value: string } = await this.g
+        .V(vertexId)
+        .sideEffect(gprocess.statics.drop())
+        .constant('gone')
+        .next();
 
-      console.log('Deleted vertex:', { label, idProperty, idValue, vertexId });
+      // Check if the delete operation affected any vertex
+      if (deleteResult.value !== 'gone') {
+        throw new Error(`Failed to delete vertex with ID ${vertexId}`);
+      }
+
+      this.logger.log('Deleted vertex:', {
+        label,
+        idProperty,
+        idValue,
+        vertexId,
+      });
 
       // Return the ID of the deleted vertex
       return vertexId.toString();
     } catch (error) {
-      console.error('Error deleting vertex:', error);
-      throw error;
+      this.logger.error(`Error in deleteVertex: ${error.message}`);
+      throw new Error(`Failed to delete vertex: ${error.message}`);
     }
   }
 }

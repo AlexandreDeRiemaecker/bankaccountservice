@@ -3,6 +3,7 @@ import { PersonsService } from './persons.service';
 import { PersonsController } from './persons.controller';
 import { NeptuneService } from 'src/shared/neptune/neptune.service';
 
+/* istanbul ignore file */
 @Module({
   controllers: [PersonsController],
   providers: [PersonsService, NeptuneService],

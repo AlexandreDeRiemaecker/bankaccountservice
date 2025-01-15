@@ -9,6 +9,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 let cachedServer: Handler;
 
+/* istanbul ignore file */
 async function bootstrap() {
   if (!cachedServer) {
     const expressApp = express();

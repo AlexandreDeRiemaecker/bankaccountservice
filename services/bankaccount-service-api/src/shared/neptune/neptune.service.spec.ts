@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NeptuneService } from './neptune.service';
+import { EmptyLogger } from '../../EmptyLogger';
 
 describe('NeptuneService', () => {
   let service: NeptuneService;
@@ -12,7 +13,9 @@ describe('NeptuneService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [NeptuneService],
-    }).compile();
+    })
+      .setLogger(new EmptyLogger())
+      .compile();
 
     service = module.get<NeptuneService>(NeptuneService);
   });
@@ -61,13 +64,17 @@ describe('NeptuneService', () => {
     const idValue = 'vertexId';
     const updates = { key: 'newValue' };
 
-    jest.spyOn(service['g'], 'V').mockReturnValue({
+    const mockTraversal = {
       hasLabel: jest.fn().mockReturnThis(),
       has: jest.fn().mockReturnThis(),
+      sideEffect: jest.fn().mockReturnThis(),
+      constant: jest.fn().mockReturnThis(),
       property: jest.fn().mockReturnThis(),
+      next: jest.fn().mockResolvedValue({ value: 'updated' }),
       id: jest.fn().mockReturnThis(),
-      next: jest.fn().mockResolvedValue({ value: 'updatedVertexId' }),
-    } as any);
+    };
+
+    jest.spyOn(service['g'], 'V').mockReturnValue(mockTraversal as any);
 
     const result = await service.updateVertex(
       label,
@@ -75,7 +82,13 @@ describe('NeptuneService', () => {
       idValue,
       updates,
     );
-    expect(result).toEqual('updatedVertexId');
+
+    expect(result).toEqual('updated');
+    expect(mockTraversal.hasLabel).toHaveBeenCalledWith(label);
+    expect(mockTraversal.has).toHaveBeenCalledWith(idProperty, idValue);
+    expect(mockTraversal.sideEffect).toHaveBeenCalled();
+    expect(mockTraversal.constant).toHaveBeenCalledWith('updated');
+    expect(mockTraversal.id).toHaveBeenCalled();
   });
 
   it('should find vertices by label', async () => {
@@ -124,12 +137,66 @@ describe('NeptuneService', () => {
       hasLabel: jest.fn().mockReturnThis(),
       has: jest.fn().mockReturnThis(),
       id: jest.fn().mockReturnThis(),
-      toList: jest.fn().mockResolvedValue(['vertexId']),
       drop: jest.fn().mockReturnThis(),
+      sideEffect: jest.fn().mockReturnThis(),
+      constant: jest.fn().mockReturnThis(),
+      toList: jest.fn().mockResolvedValue(['vertexId']),
       iterate: jest.fn().mockResolvedValue(undefined),
+      next: jest.fn().mockResolvedValue({ value: 'gone' }),
     } as any);
 
     const result = await service.deleteVertex(label, idProperty, idValue);
     expect(result).toEqual('vertexId');
+  });
+
+  it('should throw an error if the update fails', async () => {
+    const label = 'testLabel';
+    const idProperty = 'id';
+    const idValue = 'vertexId';
+    const updates = { key: 'newValue' };
+
+    const mockTraversal = {
+      hasLabel: jest.fn().mockReturnThis(),
+      has: jest.fn().mockReturnThis(),
+      sideEffect: jest.fn().mockReturnThis(),
+      constant: jest.fn().mockReturnThis(),
+      property: jest.fn().mockReturnThis(),
+      next: jest.fn().mockResolvedValue({ value: 'not_updated' }),
+    };
+
+    jest.spyOn(service['g'], 'V').mockReturnValue(mockTraversal as any);
+
+    await expect(
+      service.updateVertex(label, idProperty, idValue, updates),
+    ).rejects.toThrow('Failed to update vertex.');
+  });
+
+  it('should throw an error if the vertex ID cannot be retrieved after update', async () => {
+    const label = 'testLabel';
+    const idProperty = 'id';
+    const idValue = 'vertexId';
+    const updates = { key: 'newValue' };
+
+    const mockTraversal = {
+      hasLabel: jest.fn().mockReturnThis(),
+      has: jest.fn().mockReturnThis(),
+      sideEffect: jest.fn().mockReturnThis(),
+      constant: jest.fn().mockReturnThis(),
+      property: jest.fn().mockReturnThis(),
+      next: jest.fn().mockResolvedValue({ value: 'updated' }),
+      id: jest.fn().mockReturnThis(),
+    };
+
+    jest.spyOn(service['g'], 'V').mockReturnValueOnce(mockTraversal as any);
+    jest.spyOn(service['g'], 'V').mockReturnValueOnce({
+      hasLabel: jest.fn().mockReturnThis(),
+      has: jest.fn().mockReturnThis(),
+      id: jest.fn().mockReturnThis(),
+      next: jest.fn().mockResolvedValue({ value: null }),
+    } as any);
+
+    await expect(
+      service.updateVertex(label, idProperty, idValue, updates),
+    ).rejects.toThrow('Failed to retrieve the updated vertex ID.');
   });
 });

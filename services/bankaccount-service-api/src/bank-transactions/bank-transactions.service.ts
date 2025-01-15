@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
 import { UpdateBankTransactionDto } from './dto/update-bank-transaction.dto';
@@ -12,6 +13,8 @@ import { UpdateResponseDto } from './dto/update-response.dto';
 
 @Injectable()
 export class BankTransactionsService {
+  private readonly logger = new Logger(BankTransactionsService.name);
+
   constructor(private readonly neptuneService: NeptuneService) {}
 
   /**
@@ -24,52 +27,60 @@ export class BankTransactionsService {
   async create(
     createBankTransactionDto: CreateBankTransactionDto,
   ): Promise<BankTransactionDto> {
-    this.validateAmount(createBankTransactionDto.amount);
-    // Ensure the other person's bank account exists
-    const otherPersonBankAccount =
-      await this.neptuneService.findVertexByProperty(
+    try {
+      this.validateAmount(createBankTransactionDto.amount);
+      // Ensure the other person's bank account exists
+      const recipientBankAccount =
+        await this.neptuneService.findVertexByProperty(
+          'BankAccount',
+          'IBAN',
+          createBankTransactionDto.otherPersonIBAN,
+        );
+
+      if (!recipientBankAccount) {
+        throw new NotFoundException('Other person BankAccount not found');
+      }
+      // Ensure the bank account exists
+      const bankAccount = await this.neptuneService.findVertexByProperty(
         'BankAccount',
         'IBAN',
-        createBankTransactionDto.otherPersonIBAN,
+        createBankTransactionDto.bankAccountIBAN,
       );
 
-    if (!otherPersonBankAccount) {
-      throw new NotFoundException('Other person BankAccount not found');
+      if (!bankAccount) {
+        throw new NotFoundException('BankAccount not found');
+      }
+
+      // Create the transaction vertex
+      const transaction = await this.neptuneService.addVertex(
+        'BankTransaction',
+        {
+          transactionId: createBankTransactionDto.transactionId,
+          bankAccountIBAN: createBankTransactionDto.bankAccountIBAN,
+          otherPersonIBAN: createBankTransactionDto.otherPersonIBAN,
+          amount: createBankTransactionDto.amount,
+        },
+      );
+
+      // Link the transaction to the bank account
+      await this.neptuneService.addEdge(
+        'sent_transaction',
+        bankAccount.id,
+        transaction.id,
+      );
+
+      // Link the transaction to the other person's bank account
+      await this.neptuneService.addEdge(
+        'received_transaction',
+        recipientBankAccount.id,
+        transaction.id,
+      );
+
+      return transaction;
+    } catch (error) {
+      this.logger.error('Failed to create bank transaction', error.stack);
+      throw error;
     }
-    // Ensure the bank account exists
-    const bankAccount = await this.neptuneService.findVertexByProperty(
-      'BankAccount',
-      'IBAN',
-      createBankTransactionDto.bankAccountIBAN,
-    );
-
-    if (!bankAccount) {
-      throw new NotFoundException('BankAccount not found');
-    }
-
-    // Create the transaction vertex
-    const transaction = await this.neptuneService.addVertex('BankTransaction', {
-      transactionId: createBankTransactionDto.transactionId,
-      bankAccountIBAN: createBankTransactionDto.bankAccountIBAN,
-      otherPersonIBAN: createBankTransactionDto.otherPersonIBAN,
-      amount: createBankTransactionDto.amount,
-    });
-
-    // Link the transaction to the bank account
-    await this.neptuneService.addEdge(
-      'has_transaction',
-      bankAccount.id,
-      transaction.id,
-    );
-
-    // Link the transaction to the other person's bank account
-    await this.neptuneService.addEdge(
-      'involves_transaction',
-      otherPersonBankAccount.id,
-      transaction.id,
-    );
-
-    return transaction;
   }
 
   /**
@@ -77,13 +88,18 @@ export class BankTransactionsService {
    * @returns An array of bank transactions.
    */
   async findAll(): Promise<BankTransactionDto[]> {
-    const transactions =
-      await this.neptuneService.findVertices('BankTransaction');
-    return transactions.map((transaction) => ({
-      transactionId: transaction.transactionId,
-      otherPersonIBAN: transaction.otherPersonIBAN,
-      amount: transaction.amount,
-    }));
+    try {
+      const transactions =
+        await this.neptuneService.findVertices('BankTransaction');
+      return transactions.map((transaction) => ({
+        transactionId: transaction.transactionId,
+        destinationIBAN: transaction.destinationIBAN,
+        amount: transaction.amount,
+      }));
+    } catch (error) {
+      this.logger.error('Failed to retrieve bank transactions', error.stack);
+      throw error;
+    }
   }
 
   /**
@@ -93,17 +109,25 @@ export class BankTransactionsService {
    * @throws NotFoundException if the bank transaction is not found.
    */
   async findOne(transactionId: string): Promise<BankTransactionDto> {
-    const transaction = await this.neptuneService.findVertexByProperty(
-      'BankTransaction',
-      'transactionId',
-      transactionId,
-    );
+    try {
+      const transaction = await this.neptuneService.findVertexByProperty(
+        'BankTransaction',
+        'transactionId',
+        transactionId,
+      );
 
-    if (!transaction) {
-      throw new NotFoundException('BankTransaction not found');
+      if (!transaction) {
+        throw new NotFoundException('BankTransaction not found');
+      }
+
+      return transaction;
+    } catch (error) {
+      this.logger.error(
+        `Failed to retrieve bank transaction with id ${transactionId}`,
+        error.stack,
+      );
+      throw error;
     }
-
-    return transaction;
   }
 
   /**
@@ -117,19 +141,27 @@ export class BankTransactionsService {
     transactionId: string,
     updateBankTransactionDto: UpdateBankTransactionDto,
   ): Promise<UpdateResponseDto> {
-    if (updateBankTransactionDto.amount === undefined) {
-      throw new BadRequestException('Malformed request: amount is required');
+    try {
+      if (updateBankTransactionDto.amount === undefined) {
+        throw new BadRequestException('Malformed request: amount is required');
+      }
+
+      this.validateAmount(updateBankTransactionDto.amount);
+
+      const updatedVertexId = await this.neptuneService.updateVertex(
+        'BankTransaction',
+        'transactionId',
+        transactionId,
+        updateBankTransactionDto,
+      );
+      return { updatedVertexId };
+    } catch (error) {
+      this.logger.error(
+        `Failed to update bank transaction with id ${transactionId}`,
+        error.stack,
+      );
+      throw error;
     }
-
-    this.validateAmount(updateBankTransactionDto.amount);
-
-    const updatedVertexId = await this.neptuneService.updateVertex(
-      'BankTransaction',
-      'transactionId',
-      transactionId,
-      updateBankTransactionDto,
-    );
-    return { updatedVertexId };
   }
 
   /**
@@ -138,12 +170,25 @@ export class BankTransactionsService {
    * @returns The response containing the deleted vertex ID.
    */
   async remove(transactionId: string): Promise<DeleteResponseDto> {
-    const deletedVertexId: string = await this.neptuneService.deleteVertex(
-      'BankTransaction',
-      'transactionId',
-      transactionId,
-    );
-    return { deletedVertexId };
+    try {
+      const deletedVertexId: string = await this.neptuneService.deleteVertex(
+        'BankTransaction',
+        'transactionId',
+        transactionId,
+      );
+
+      if (!deletedVertexId) {
+        throw new NotFoundException('BankTransaction not found');
+      }
+
+      return { deletedVertexId };
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete bank transaction with id ${transactionId}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   /**

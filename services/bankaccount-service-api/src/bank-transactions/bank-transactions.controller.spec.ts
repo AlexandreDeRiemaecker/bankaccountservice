@@ -4,7 +4,8 @@ import { BankTransactionsService } from './bank-transactions.service';
 import { SharedModule } from '../shared/shared.module';
 import { CreateBankTransactionDto } from './dto/create-bank-transaction.dto';
 import { BankTransactionDto } from './dto/bank-transaction.dto';
-import { MockFunctionMetadata, ModuleMocker } from 'jest-mock';
+import { HttpException } from '@nestjs/common';
+import { EmptyLogger } from '../EmptyLogger';
 
 describe('BankTransactionsController', () => {
   let controller: BankTransactionsController;
@@ -16,30 +17,12 @@ describe('BankTransactionsController', () => {
   });
 
   beforeEach(async () => {
-    const moduleMocker = new ModuleMocker(global);
-
     const moduleRef: TestingModule = await Test.createTestingModule({
       imports: [SharedModule],
       controllers: [BankTransactionsController],
+      providers: [BankTransactionsService],
     })
-      .useMocker((token) => {
-        if (token === BankTransactionsService) {
-          return {
-            create: jest.fn(),
-            findAll: jest.fn(),
-            findOne: jest.fn(),
-            update: jest.fn(),
-            remove: jest.fn(),
-          };
-        }
-        if (typeof token === 'function') {
-          const mockMetadata = moduleMocker.getMetadata(
-            token,
-          ) as MockFunctionMetadata<any, any>;
-          const Mock = moduleMocker.generateFromMetadata(mockMetadata);
-          return new Mock();
-        }
-      })
+      .setLogger(new EmptyLogger())
       .compile();
 
     controller = moduleRef.get<BankTransactionsController>(
@@ -62,7 +45,7 @@ describe('BankTransactionsController', () => {
       };
       const result: BankTransactionDto = {
         transactionId: 'transactionId',
-        otherPersonIBAN: 'DE1234567890',
+        destinationIBAN: 'DE1234567890',
         amount: 1000,
       };
       jest.spyOn(service, 'create').mockResolvedValue(result);
@@ -92,7 +75,7 @@ describe('BankTransactionsController', () => {
       const result: BankTransactionDto[] = [
         {
           transactionId: 'transactionId',
-          otherPersonIBAN: 'DE1234567890',
+          destinationIBAN: 'DE1234567890',
           amount: 1000,
         },
       ];
@@ -116,7 +99,7 @@ describe('BankTransactionsController', () => {
     it('should return a single bank transaction', async () => {
       const result: BankTransactionDto = {
         transactionId: 'transactionId',
-        otherPersonIBAN: 'DE1234567890',
+        destinationIBAN: 'DE1234567890',
         amount: 1000,
       };
       jest.spyOn(service, 'findOne').mockResolvedValue(result);
@@ -181,6 +164,29 @@ describe('BankTransactionsController', () => {
 
       await expect(controller.remove('transactionId')).rejects.toThrow(
         'Failed to delete bank transaction',
+      );
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a single bank transaction', async () => {
+      const result: BankTransactionDto = {
+        transactionId: 'transactionId',
+        destinationIBAN: 'DE1234567890',
+        amount: 1000,
+      };
+      jest.spyOn(service, 'findOne').mockResolvedValue(result);
+
+      expect(await controller.findOne('transactionId')).toBe(result);
+    });
+
+    it('should throw an HttpException if an error occurs', async () => {
+      jest
+        .spyOn(service, 'findOne')
+        .mockRejectedValue(new Error('Unexpected error'));
+
+      await expect(controller.findOne('transactionId')).rejects.toThrow(
+        HttpException,
       );
     });
   });

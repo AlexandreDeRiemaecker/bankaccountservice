@@ -8,6 +8,7 @@ import { UpdatePersonDto } from './dto/update-person.dto';
 import { UpdateResponseDto } from './dto/update-response.dto';
 import { DeleteResponseDto } from './dto/delete-response.dto';
 import { PersonDto } from './dto/person.dto';
+import { EmptyLogger } from '../EmptyLogger';
 
 describe('PersonsController', () => {
   let controller: PersonsController;
@@ -25,6 +26,7 @@ describe('PersonsController', () => {
       imports: [SharedModule],
       controllers: [PersonsController],
     })
+      .setLogger(new EmptyLogger())
       .useMocker((token) => {
         if (token === PersonsService) {
           return {

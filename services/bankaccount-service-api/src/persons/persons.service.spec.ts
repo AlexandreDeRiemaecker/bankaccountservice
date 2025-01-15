@@ -4,6 +4,7 @@ import { SharedModule } from '../shared/shared.module';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
 import { NeptuneService } from '../shared/neptune/neptune.service';
+import { EmptyLogger } from '../EmptyLogger';
 
 describe('PersonsService', () => {
   let service: PersonsService;
@@ -18,7 +19,9 @@ describe('PersonsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [SharedModule],
       providers: [PersonsService],
-    }).compile();
+    })
+      .setLogger(new EmptyLogger())
+      .compile();
 
     service = module.get<PersonsService>(PersonsService);
     neptuneService = module.get<NeptuneService>(NeptuneService);

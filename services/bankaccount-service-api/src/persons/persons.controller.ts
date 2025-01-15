@@ -102,7 +102,7 @@ export class PersonsController {
   @ApiResponse({
     status: 200,
     description: 'The person has been successfully updated.',
-    type: UpdateResponseDto, // Specify the response type
+    type: UpdateResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 404, description: 'Person not found.' })
@@ -130,7 +130,7 @@ export class PersonsController {
   @ApiResponse({
     status: 200,
     description: 'The person has been successfully deleted.',
-    type: DeleteResponseDto, // Specify the response type
+    type: DeleteResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Person not found.' })
   @ApiResponse({

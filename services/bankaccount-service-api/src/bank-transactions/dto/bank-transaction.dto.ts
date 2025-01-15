@@ -21,7 +21,7 @@ export class BankTransactionDto {
       'The International Bank Account Number (IBAN) of the person receiving the transaction amount.',
   })
   @IsIBAN()
-  otherPersonIBAN: string;
+  destinationIBAN: string;
 
   /**
    * The amount of the transaction.

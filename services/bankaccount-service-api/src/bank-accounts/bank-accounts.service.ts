@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { CreateBankAccountDto } from './dto/create-bank-account.dto';
 import { UpdateBankAccountDto } from './dto/update-bank-account.dto';
@@ -15,6 +16,8 @@ import { DeleteResponseDto } from './dto/delete-response.dto';
  */
 @Injectable()
 export class BankAccountsService {
+  private readonly logger = new Logger(BankAccountsService.name);
+
   constructor(private readonly neptuneService: NeptuneService) {}
 
   /**
@@ -27,38 +30,45 @@ export class BankAccountsService {
   async create(
     createBankAccountDto: CreateBankAccountDto,
   ): Promise<BankAccountDto> {
-    const existingAccount = await this.neptuneService.findVertexByProperty(
-      'BankAccount',
-      'IBAN',
-      createBankAccountDto.IBAN,
-    );
+    try {
+      const existingAccount = await this.neptuneService.findVertexByProperty(
+        'BankAccount',
+        'IBAN',
+        createBankAccountDto.IBAN,
+      );
 
-    if (existingAccount) {
-      throw new ConflictException('BankAccount with this IBAN already exists');
+      if (existingAccount) {
+        throw new ConflictException(
+          'BankAccount with this IBAN already exists',
+        );
+      }
+
+      const person = await this.neptuneService.findVertexByProperty(
+        'Person',
+        'personId',
+        createBankAccountDto.personId,
+      );
+
+      if (!person) {
+        throw new NotFoundException('Person not found');
+      }
+
+      const bankAccount = await this.neptuneService.addVertex('BankAccount', {
+        IBAN: createBankAccountDto.IBAN,
+        currentBalance: createBankAccountDto.currentBalance,
+      });
+
+      await this.neptuneService.addEdge(
+        'owns_account',
+        person.id,
+        bankAccount.id,
+      );
+
+      return bankAccount;
+    } catch (error) {
+      this.logger.error('Failed to create bank account', error.stack);
+      throw error;
     }
-
-    const person = await this.neptuneService.findVertexByProperty(
-      'Person',
-      'personId',
-      createBankAccountDto.personId,
-    );
-
-    if (!person) {
-      throw new NotFoundException('Person not found');
-    }
-
-    const bankAccount = await this.neptuneService.addVertex('BankAccount', {
-      IBAN: createBankAccountDto.IBAN,
-      currentBalance: createBankAccountDto.currentBalance,
-    });
-
-    await this.neptuneService.addEdge(
-      'owns_account',
-      person.id,
-      bankAccount.id,
-    );
-
-    return bankAccount;
   }
 
   /**
@@ -66,7 +76,12 @@ export class BankAccountsService {
    * @returns An array of bank accounts.
    */
   async findAll(): Promise<BankAccountDto[]> {
-    return await this.neptuneService.findVertices('BankAccount');
+    try {
+      return await this.neptuneService.findVertices('BankAccount');
+    } catch (error) {
+      this.logger.error('Failed to retrieve bank accounts', error.stack);
+      throw error;
+    }
   }
 
   /**
@@ -76,17 +91,25 @@ export class BankAccountsService {
    * @throws NotFoundException if the bank account is not found.
    */
   async findOne(id: string): Promise<BankAccountDto> {
-    const bankAccount = await this.neptuneService.findVertexByProperty(
-      'BankAccount',
-      'IBAN',
-      id,
-    );
+    try {
+      const bankAccount = await this.neptuneService.findVertexByProperty(
+        'BankAccount',
+        'IBAN',
+        id,
+      );
 
-    if (!bankAccount) {
-      throw new NotFoundException('BankAccount not found');
+      if (!bankAccount) {
+        throw new NotFoundException('BankAccount not found');
+      }
+
+      return bankAccount;
+    } catch (error) {
+      this.logger.error(
+        `Failed to retrieve bank account with id ${id}`,
+        error.stack,
+      );
+      throw error;
     }
-
-    return bankAccount;
   }
 
   /**
@@ -99,13 +122,21 @@ export class BankAccountsService {
     id: string,
     updateBankAccountDto: UpdateBankAccountDto,
   ): Promise<UpdateResponseDto> {
-    const updatedVertexId = await this.neptuneService.updateVertex(
-      'BankAccount',
-      'IBAN',
-      id,
-      updateBankAccountDto,
-    );
-    return { updatedVertexId };
+    try {
+      const updatedVertexId = await this.neptuneService.updateVertex(
+        'BankAccount',
+        'IBAN',
+        id,
+        updateBankAccountDto,
+      );
+      return { updatedVertexId };
+    } catch (error) {
+      this.logger.error(
+        `Failed to update bank account with id ${id}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 
   /**
@@ -114,11 +145,19 @@ export class BankAccountsService {
    * @returns The response containing the deleted vertex ID.
    */
   async remove(IBAN: string): Promise<DeleteResponseDto> {
-    const deletedVertexId = await this.neptuneService.deleteVertex(
-      'BankAccount',
-      'IBAN',
-      IBAN,
-    );
-    return { deletedVertexId };
+    try {
+      const deletedVertexId = await this.neptuneService.deleteVertex(
+        'BankAccount',
+        'IBAN',
+        IBAN,
+      );
+      return { deletedVertexId };
+    } catch (error) {
+      this.logger.error(
+        `Failed to delete bank account with id ${IBAN}`,
+        error.stack,
+      );
+      throw error;
+    }
   }
 }
