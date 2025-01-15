@@ -12,7 +12,7 @@ import { driver, process as gprocess, structure } from 'gremlin';
 @Injectable()
 export class NeptuneService implements OnModuleInit, OnModuleDestroy {
   private readonly gremlinClient: driver.Client;
-  private readonly g: gprocess.GraphTraversalSource;
+  public readonly g: gprocess.GraphTraversalSource;
   private readonly endpoint: string;
   private readonly logger = new Logger(NeptuneService.name);
 
@@ -37,14 +37,6 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
     this.g = graph
       .traversal()
       .withRemote(new driver.DriverRemoteConnection(this.endpoint));
-  }
-
-  /**
-   * Get the Gremlin traversal source.
-   * @returns The Gremlin traversal source.
-   */
-  getTraversal() {
-    return this.g;
   }
 
   /**
@@ -189,6 +181,16 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
    * @param label The label of the vertices to find.
    * @returns The list of vertices.
    */
+  /**
+   * Finds vertices in the graph with the specified label.
+   *
+   * @param label - The label of the vertices to find.
+   * @returns A promise that resolves to an array of objects representing the vertices.
+   * Each object contains the properties of the vertex, with single-value arrays flattened,
+   * and excluding the `id` and `label` properties.
+   *
+   * @throws Will log an error and return an empty array if an error occurs during the query.
+   */
   async findVertices(label: string): Promise<any[]> {
     try {
       const traversers = await this.g
@@ -203,7 +205,7 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
 
       // Convert Map to plain object, flatten single-value arrays, and exclude `id` and `label`.
       const result = traversers.map((map: Map<string, any>) => {
-        const obj = Object.fromEntries(map);
+        const obj = Object.fromEntries(Array.from(map.entries()));
         // Flatten properties that are single-value arrays.
         for (const key in obj) {
           if (Array.isArray(obj[key]) && obj[key].length === 1) {
@@ -324,6 +326,93 @@ export class NeptuneService implements OnModuleInit, OnModuleDestroy {
     } catch (error) {
       this.logger.error(`Error in deleteVertex: ${error.message}`);
       throw new Error(`Failed to delete vertex: ${error.message}`);
+    }
+  }
+
+  /**
+   * Find all vertices of a given label that have an edge connecting them.
+   * @param label The label of the two vertices.
+   * @returns The list of vertex pairs connected by the edges.
+   */
+  async findConnectedVertices(
+    label: string,
+  ): Promise<{ from: any; to: any }[]> {
+    try {
+      // Fetch all edges with the specified label
+      const edges = await this.g.E().hasLabel(label).toList();
+
+      // Batch fetch vertex pairs for all edges
+      const vertexPairs = await Promise.all(
+        edges.map(async (edge) => {
+          const vertices = await this.g.E(edge).bothV().valueMap(true).toList();
+
+          if (vertices.length === 2) {
+            return {
+              from: vertices[0],
+              to: vertices[1],
+            };
+          }
+
+          return null;
+        }),
+      );
+
+      // Filter out null results
+      return vertexPairs.filter((pair) => pair !== null);
+    } catch (error) {
+      this.logger.error(`Error finding edges with label: ${label}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find an edge between two vertices.
+   * @param label The label of the edge.
+   * @param vertexLabel The label of the vertices.
+   * @param idProperty The property to filter by.
+   * @param fromId The ID of the starting vertex.
+   * @param toId The ID of the ending vertex.
+   * @returns The found edge.
+   */
+  async findEdgeBetweenVertices(
+    label: string,
+    vertexLabel: string,
+    idProperty: string,
+    fromId: string,
+    toId: string,
+  ): Promise<number | null> {
+    try {
+      const edge = await this.g
+        .V()
+        .hasLabel(vertexLabel)
+        .has(idProperty, fromId)
+        .bothE(label)
+        .where(this.g.V().has(idProperty, toId))
+        .next();
+
+      if (edge.value) {
+        return edge.value.id;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      this.logger.error('Error finding edge between vertices:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete an edge by its ID.
+   * @param edgeId The ID of the edge to delete.
+   * @returns The ID of the deleted edge.
+   */
+  async deleteEdgeById(edgeId: string): Promise<string> {
+    try {
+      await this.g.E(edgeId).drop().iterate();
+      return edgeId;
+    } catch (error) {
+      this.logger.error('Error deleting edge:', error);
+      throw error;
     }
   }
 }

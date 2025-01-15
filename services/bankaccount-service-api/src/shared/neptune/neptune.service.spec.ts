@@ -25,7 +25,7 @@ describe('NeptuneService', () => {
   });
 
   it('should initialize the service', () => {
-    expect(service.getTraversal()).toBeDefined();
+    expect(service.g).toBeDefined();
   });
 
   it('should add a vertex', async () => {

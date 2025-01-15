@@ -14,7 +14,7 @@ The project uses NestJS for the API service, AWS CDK for infrastructure as code,
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
 - [Available Commands](#available-commands)
-- [Miscellaneous](#miscellaneous-notes)
+- [Key decisions](#Key decisions)
   - [Lambdalith](#lambdalith)
   - [Near-real-time updates with SQS](#near-real-time-updates-with-sqs)
   - [Notes on using GremlinJS](#notes-on-using-gremlinjs)
@@ -61,15 +61,15 @@ The following commands are available at the root level:
 - `yarn hotdeploy`: Deploys the infrastructure with hotswap fallback.
 - `yarn test`: Runs tests for the API service.
 
-## Miscellaneous
+## Key decisions
 
 ### Lambdalith
 
-Monolithic lambdas that serve multiple routes can cause longer cold startup, but also reduce the occurrence of cold-startups because the same lambda is executed more often. As it is easier than multiple small lambdas to locally run the solution and to migrate the project to containers (when using Express/NestJS), we choose this approach. However, it is recommended to architect services that are granular enough in order to avoid an unacceptable increase in cold-start times, build time, and deployment time.
+Monolithic lambdas that serve multiple routes can cause longer cold startup, but also reduce the occurrence of cold-startups because the same lambda is executed more often. As it is easier than multiple small lambdas to locally run the solution and to migrate the project to containers (when using Express/NestJS), we choose this approach. However, it is recommended to architect services that are granular enough in order to avoid an unacceptable increase in cold-start times, build time, and deployment time due to a fat NodeJS bundle that creates long initializaton times.
 
 ### Near-real-time updates with SQS
 
-We use SQS to react to data changes and take the approach of eventual consistency.
+We use SQS with lambdas consuming and processing Neptune record updates and updating the Neptune graph for account balance and credit line in an async, eventually consistent way. We use a Dead-Letter-Queue to ensure we don't loose events. This replaces the bulk approach triggered via webhook that would have run once every night. This also allows to be quickly aware of issues with new deployments instead of an alarm at night.
 
 ### Notes on using GremlinJS
 
@@ -93,8 +93,8 @@ We use the Business Id because the VertexIds in AWS Neptune can change when vert
 
 ### Exploring the data via Graphistry
 
-If we wish to explore the data easily, we can add an additional CDK stack that imports the CF Template provided at [Enabling low code graph data apps with Amazon Neptune and Graphistry](https://aws.amazon.com/blogs/database/enabling-low-code-graph-data-apps-with-amazon-neptune-and-graphistry/) with the CF parameters pointing to our Neptune Cluster.
+Should we want to explore the data easily, we can add an additional CDK stack that imports the CF Template provided at [Enabling low code graph data apps with Amazon Neptune and Graphistry](https://aws.amazon.com/blogs/database/enabling-low-code-graph-data-apps-with-amazon-neptune-and-graphistry/) with the CF parameters pointing to our Neptune Cluster.
 
 ### Friendships
 
-We could have handled friendships with the persons module, but with many-to-many relationships, we prefer seeing that bi-directional relationship "Person_Person" called "Friendship" as its own REST resource. This ensures that if we need to add properties to a friendship (e.g., a creationDate), we don't need to introduce breaking changes in the API.
+We could have handled friendships with the persons module, but with many-to-many relationships, we prefer seeing that bi-directional relationship "Person_Person" called "Friendship" as its own REST resource. This ensures that if we need to add properties to a friendship (e.g., a creationDate), we don't need to introduce breaking changes in the API. This is a case that may start out as just an edge, but could become it's own vertex with two edges.
